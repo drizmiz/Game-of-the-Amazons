@@ -21,12 +21,14 @@ namespace eval_adj	// evaluation adjusted
 #endif
 	}
 	void append_log(string msg, bool always = false) {
+#ifdef _DEBUG
 		if (always) ofs << msg << endl;
 		else {
-#ifdef _DEBUG
+
 			ofs << msg << endl;
-#endif
+
 		}
+#endif
 	}
 	class player {
 	public:
@@ -83,6 +85,7 @@ namespace eval_adj	// evaluation adjusted
 	class evaluator {
 		using distance_matrix = uint8_t[8][8];
 		using distance_matrix_group = array<distance_matrix, 4>;
+		friend int amz::_Debug_evaluate(const chess_status& cs, chess_color color, std::ostream& out);
 	public:
 		evaluator(const player& pl, const board& bd) :_pl(pl), _bd(bd) {
 			for (auto& dmg : dm_1)
@@ -212,6 +215,8 @@ namespace eval_adj	// evaluation adjusted
 			vector<tuple<int, int>> open;
 			bitset<64> closed;
 
+			open.reserve(32);
+
 			auto eigen_value = [](tuple<int, int> pair) {
 				auto [x, y] = pair;
 				return (uint8_t)x << 3 | (uint8_t)y;
@@ -291,6 +296,8 @@ namespace eval_adj	// evaluation adjusted
 		void _single_king_min_moves(tuple<int, int> from, distance_matrix& distance) {
 			vector<tuple<int, int>> open;
 			bitset<64> closed;
+
+			open.reserve(32);
 
 			auto eigen_value = [](tuple<int, int> pair) {
 				auto [x, y] = pair;

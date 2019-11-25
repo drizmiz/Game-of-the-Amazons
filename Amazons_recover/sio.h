@@ -15,11 +15,13 @@ namespace sio // simple io
 		cg.set_color(chess_color::black);
 		cg.init();
 
-		in >> turn_cnt;
+		int turn = 0;
+		in >> turn;
+		cg.set_turn(turn);
 
 		int from_i{}, from_j{}, to_i{}, to_j{}, obs_i{}, obs_j{};
 
-		for (int i = 0; i < turn_cnt; ++i)
+		for (int i = 0; i < turn; ++i)
 		{
 			// 首先是对手行动
 			in >> from_i >> from_j >> to_i >> to_j >> obs_i >> obs_j;
@@ -36,7 +38,7 @@ namespace sio // simple io
 
 			// 然后是自己当时的行动
 			// 对手行动总比自己行动多一次
-			if (i < turn_cnt - 1)
+			if (i < turn - 1)
 			{
 				//csbd::_Debug_paint(cg.get_status());
 				in >> from_i >> from_j >> to_i >> to_j >> obs_i >> obs_j;

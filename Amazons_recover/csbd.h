@@ -3,11 +3,6 @@
 
 #include "std.h"
 
-namespace sio // simple io
-{
-	int turn_cnt;
-}
-
 #pragma region definition
 // 下面是定义
 namespace amz // chess board

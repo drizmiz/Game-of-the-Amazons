@@ -72,13 +72,28 @@ namespace amz
 		}
 	}
 
-	eval_t chess_game::_Alphabeta(int depth, eval_t alpha, eval_t beta)
+	inline bool chess_game::_Permit_null()
+	{
+		return turn_cnt <= 12;
+	}
+
+	constexpr int _null_cut = 1;
+	eval_t chess_game::_Alphabeta(int depth, eval_t alpha, eval_t beta, bool _no_null = false)
 	{
 		using namespace std::chrono;
 		// 置换表查询
 		const auto [_val, mm_hash] = rt.probe_hash(this->get_status(), depth, alpha, beta);
 		if (_val != unknown)
 			return _val;
+		// 空着裁剪
+		if (!_no_null && _Permit_null()) 
+		{
+			null_move();
+			eval_t ev = -_Alphabeta(depth - 1 - _null_cut, -beta, -(beta - 1), true);
+			null_move();	// same as undo_null_move
+			if (ev >= beta)
+				return ev;
+		}
 		// 超时
 		auto end = steady_clock::now();
 		auto diff = duration_cast<std::chrono::milliseconds>(end - starttime).count();
@@ -97,7 +112,7 @@ namespace amz
 			return _Evaluate(this->get_status(), this->get_color());
 		}
 		// 到达深度
-		if (depth == 0)
+		if (depth <= 0)
 		{
 			const eval_t val = _Evaluate(this->get_status(), this->get_color());
 			// rt.record_hash(this->get_status(), , depth, val, node_f::pv);
@@ -119,7 +134,7 @@ namespace amz
 				eval = -_Alphabeta(depth - 1, -beta, -alpha);
 			else
 			{
-				eval = -_Alphabeta(depth - 1, -alpha - 1, -alpha);
+				eval = -_Alphabeta(depth - 1, -(alpha + 1), -alpha);
 				if ((eval > alpha) && (eval < beta))
 					eval = -_Alphabeta(depth - 1, -beta, -alpha);
 			}
@@ -150,7 +165,7 @@ namespace amz
 		}
 		return eval_max;
 	}
-
+	
 	movement chess_game::_Root_search(int depth, eval_t alpha, eval_t beta)
 	{
 		movement mm_hash = dft_movement;
