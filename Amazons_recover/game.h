@@ -5,23 +5,43 @@
 
 namespace amz
 {
-
 	struct movement
 	{
-		off_i_t from;
-		off_i_t to;
-		off_i_t obs;
+		off_i_t _from;
+		off_i_t _to;
+		off_i_t _obs;
+
 		bool operator!=(const movement& mm2) const
 		{
-			return !(from == mm2.from && to == mm2.to && obs == mm2.obs);
+			return !(_from == mm2._from && _to == mm2._to && _obs == mm2._obs);
+		}
+
+		const std::tuple<len_t, len_t>& from() const {
+			return get_ij(_from);
+		}
+		const std::tuple<len_t, len_t>& to() const {
+			return get_ij(_to);
+		}
+		const std::tuple<len_t, len_t>& arrow() const {
+			return get_ij(_obs);
+		}
+
+		off_i_t& fromi() {
+			return _from;
+		}
+		off_i_t& toi() {
+			return _to;
+		}
+		off_i_t& obsi() {
+			return _obs;
 		}
 	};
 
 	constexpr movement dft_movement = { 64,64,64 };
 
-	constexpr bool _Is_dft_move(movement mm)
+	bool _Is_dft_move(movement mm)
 	{
-		return mm.from == 64;
+		return mm.fromi() == 64;
 	}
 
 	constexpr eval_t inf = static_cast<eval_t>(1e7);
@@ -97,12 +117,12 @@ namespace amz
 		void record_history(movement mm, int depth)
 		{
 			// 64 = 2^6
-			int index = (mm.from << 12) | (mm.to << 6) | mm.obs;
+			int index = (mm._from << 12) | (mm._to << 6) | mm._obs;
 			history_table[index] += depth * depth;
 		}
 		int probe_history(movement mm)
 		{
-			const int index = (mm.from << 12) | (mm.to << 6) | mm.obs;
+			const int index = (mm._from << 12) | (mm._to << 6) | mm._obs;
 			return history_table[index];
 		}
 	};
@@ -136,14 +156,14 @@ namespace amz
 			movement cur = dft_movement;
 			for (const off_i_t chess : _Transform_to_i(_Mine()))
 			{
-				cur.from = chess;
+				cur.fromi() = chess;
 				for (const off_i_t dest : get_all_possible_i(_cs.all.board(), chess))
 				{
-					cur.to = dest;
+					cur.toi() = dest;
 					_cs.move_piece(chess, dest, my_color);
 					for (const off_i_t obs : get_all_possible_i(_cs.all.board(), dest))
 					{
-						cur.obs = obs;
+						cur.obsi() = obs;
 						ret.push_back(cur);
 					}
 					_cs.move_piece(dest, chess, my_color);

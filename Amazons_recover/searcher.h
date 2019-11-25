@@ -85,11 +85,11 @@ namespace amz
 
 		if (diff > deadspan)
 		{
-
+#ifdef __GNUC__
 			return inf;
-
-
-
+#else
+			std::cout << "warning: TLE" << std::endl;
+#endif
 		}
 		if (diff > timespan)
 		{
@@ -114,7 +114,7 @@ namespace amz
 		{
 			make_move(mm);
 			// PVS
-			eval_t eval;
+			eval_t eval = -inf;
 			if (eval_max == -inf)
 				eval = -_Alphabeta(depth - 1, -beta, -alpha);
 			else
@@ -133,8 +133,6 @@ namespace amz
 					flag = node_f::beta;
 					mm_best = mm;
 					break;
-					// rt.record_hash(this->get_status(), , depth, beta, node_f::beta);
-					// return val;
 				}
 				if (eval > alpha)
 				{
@@ -167,7 +165,7 @@ namespace amz
 		{
 			make_move(mm);
 			// PVS
-			eval_t eval;
+			eval_t eval = -inf;
 			if (eval_max == -inf)
 				eval = -_Alphabeta(depth - 1, -beta, -alpha);
 			else
@@ -186,8 +184,6 @@ namespace amz
 					flag = node_f::beta;
 					mm_best = mm;
 					break;
-					// rt.record_hash(this->get_status(), , depth, beta, node_f::beta);
-					// return val;
 				}
 				if (eval > alpha)
 				{
@@ -203,7 +199,7 @@ namespace amz
 		rt.record_history(mm_best, depth);
 		return mm_best;
 	}
-		movement chess_game::_Search_till_timeout() // unit: ms
+	movement chess_game::_Search_till_timeout() // unit: ms
 	{
 		using namespace std::chrono;
 		this->rt.clear();
@@ -212,16 +208,12 @@ namespace amz
 		eval_t eval = _Evaluate(this->get_status(), this->get_color());
 		for (int i = 1; ; ++i)
 		{
-			if constexpr (!false)
-				mm_best = _Root_search(i, -inf, inf);
-			else {
-				mm_best = _Root_search(i, -inf, inf, eval);
-			}
+			mm_best = _Root_search(i, -inf, inf);
 			if (timespan == 0)
 			{
-
-
-
+#ifndef __GNUC__
+				std::cout << "完全搜索的层数：" << i - 1 << std::endl;
+#endif
 				break;
 			}
 		}

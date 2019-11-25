@@ -3,11 +3,6 @@
 
 #include "std.h"
 
-#pragma warning(push)
-
-#pragma warning(disable: 26446)
-#pragma warning(disable: 26482)
-
 namespace sio // simple io
 {
 	int turn_cnt;
@@ -527,6 +522,34 @@ namespace amz // chess board
 		}
 		return ret;
 	}
+	std::array<off_i_t, 4> _Transform_4_to_i(bit_table moves)
+	{
+		std::array<off_i_t, 4> ret;
+		byte i = 0;
+		for (;;)
+		{
+			const off_i_t tmp = _Select_highest(moves);
+			ret[i++] = tmp;
+			if (i == 4)
+				break;
+			undo_place_bit(moves, tmp);
+		}
+		return ret;
+	}
+	std::array<std::tuple<len_t, len_t>, 4> _Transform_4_to_ij(bit_table moves)
+	{
+		std::array<std::tuple<len_t, len_t>, 4> ret;
+		byte i = 0;
+		for (;;)
+		{
+			const off_i_t tmp = _Select_highest(moves);
+			ret[i++] = get_ij(tmp);
+			if (i == 4)
+				break;
+			undo_place_bit(moves, tmp);
+		}
+		return ret;
+	}
 	std::vector<off_i_t> get_all_possible_i(bit_table chessboard, off_i_t i)
 	{
 		return _Transform_to_i(get_all_possible_moves(chessboard, i));
@@ -682,6 +705,10 @@ namespace amz // chess board
 		{
 			all.unplace_piece(i);
 		}
+
+		bit_table get_black() const { return black; }
+		bit_table get_white() const { return white; }
+		bit_table get_all() const { return all.board(); }
 	};
 
 #pragma endregion
@@ -732,5 +759,3 @@ namespace amz // chess board
 #pragma endregion
 }
 #pragma endregion
-
-#pragma warning(pop)

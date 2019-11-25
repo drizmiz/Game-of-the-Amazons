@@ -1,15 +1,14 @@
 
 #include "std.h"
 
-#define THROW_EXCEPTION
+// #define THROW_EXCEPTION
 
 namespace yrq_new 
 {
-
   using namespace std;
   ofstream ofs("records.log");
 
-  void unexpected(bool condition, string msg) {
+  void unexpect(bool condition, string msg) {
 #ifdef _DEBUG
     if (condition) {
       ofs << "unexpected condition: " << msg << endl;
@@ -121,32 +120,32 @@ namespace yrq_new
 #ifdef _DEBUG
       auto between_0_8 = [](int v) {return v >= 0 && v < 8; };
       auto [fx, fy] = mv.from();
-      unexpected(!between_0_8(fx) || !between_0_8(fy), "move::from out of range");
+      unexpect(!between_0_8(fx) || !between_0_8(fy), "move::from out of range");
       auto [tx, ty] = mv.to();
-      unexpected(!between_0_8(tx) || !between_0_8(ty), "move::to out of range");
+      unexpect(!between_0_8(tx) || !between_0_8(ty), "move::to out of range");
       auto [ax, ay] = mv.arrow();
-      unexpected(!between_0_8(ax) || !between_0_8(ay), "move::arrow out of range");
+      unexpect(!between_0_8(ax) || !between_0_8(ay), "move::arrow out of range");
       bool from_is_one_amazon = false;
       for (int i = 0; i < 4; ++i)
         if (self()[i] == mv.from() || opponent()[i] == mv.from())
           from_is_one_amazon = true;
-      unexpected(!from_is_one_amazon, "from is not a movable amazon");
+      unexpect(!from_is_one_amazon, "from is not a movable amazon");
 #endif
     }
     void _check_undo_move_valid(const move& mv) const {
 #ifdef _DEBUG
       auto between_0_8 = [](int v) {return v >= 0 && v < 8; };
       auto [fx, fy] = mv.from();
-      unexpected(!between_0_8(fx) || !between_0_8(fy), "move::from out of range");
+      unexpect(!between_0_8(fx) || !between_0_8(fy), "move::from out of range");
       auto [tx, ty] = mv.to();
-      unexpected(!between_0_8(tx) || !between_0_8(ty), "move::to out of range");
+      unexpect(!between_0_8(tx) || !between_0_8(ty), "move::to out of range");
       auto [ax, ay] = mv.arrow();
-      unexpected(!between_0_8(ax) || !between_0_8(ay), "move::arrow out of range");
+      unexpect(!between_0_8(ax) || !between_0_8(ay), "move::arrow out of range");
       bool to_is_one_amazon = false;
       for (int i = 0; i < 4; ++i)
         if (self()[i] == mv.to() || opponent()[i] == mv.to())
           to_is_one_amazon = true;
-      unexpected(!to_is_one_amazon, "to is not a movable amazon");
+      unexpect(!to_is_one_amazon, "to is not a movable amazon");
 #endif
     }
   private:
@@ -243,35 +242,35 @@ namespace yrq_new
         for (int j = 0; j < 8; ++j)
           if (_map[i][j].is_white()) ++w;
           else if (_map[i][j].is_black()) ++b;
-      unexpected(w < 4, "white amazons less than 4");
-      unexpected(b < 4, "black amazons less than 4");
+      unexpect(w < 4, "white amazons less than 4");
+      unexpect(b < 4, "black amazons less than 4");
     }
     void _check_move_valid(const move& mv) const {
 #ifdef _DEBUG
       auto between_0_8 = [](int v) {return v >= 0 && v < 8; };
       auto [fx, fy] = mv.from();
-      unexpected(!between_0_8(fx) || !between_0_8(fy), "move::from out of range");
+      unexpect(!between_0_8(fx) || !between_0_8(fy), "move::from out of range");
       auto [tx, ty] = mv.to();
-      unexpected(!between_0_8(tx) || !between_0_8(ty), "move::to out of range");
+      unexpect(!between_0_8(tx) || !between_0_8(ty), "move::to out of range");
       auto [ax, ay] = mv.arrow();
-      unexpected(!between_0_8(ax) || !between_0_8(ay), "move::arrow out of range");
-      unexpected(!(_locate_teil(mv.from()).is_black() || _locate_teil(mv.from()).is_white()), "object to be move is not an amazon");
-      unexpected(!_locate_teil(mv.to()).is_empty(), "amazon target is not empty");
-      unexpected(mv.arrow() != mv.from() && !_locate_teil(mv.arrow()).is_empty(), "arrow target is not empty");
+      unexpect(!between_0_8(ax) || !between_0_8(ay), "move::arrow out of range");
+      unexpect(!(_locate_teil(mv.from()).is_black() || _locate_teil(mv.from()).is_white()), "object to be move is not an amazon");
+      unexpect(!_locate_teil(mv.to()).is_empty(), "amazon target is not empty");
+      unexpect(mv.arrow() != mv.from() && !_locate_teil(mv.arrow()).is_empty(), "arrow target is not empty");
 #endif
     }
     void _check_undo_move_valid(const move& mv) const {
 #ifdef _DEBUG
       auto between_0_8 = [](int v) {return v >= 0 && v < 8; };
       auto [fx, fy] = mv.from();
-      unexpected(!between_0_8(fx) || !between_0_8(fy), "move::from out of range");
+      unexpect(!between_0_8(fx) || !between_0_8(fy), "move::from out of range");
       auto [tx, ty] = mv.to();
-      unexpected(!between_0_8(tx) || !between_0_8(ty), "move::to out of range");
+      unexpect(!between_0_8(tx) || !between_0_8(ty), "move::to out of range");
       auto [ax, ay] = mv.arrow();
-      unexpected(!between_0_8(ax) || !between_0_8(ay), "move::arrow out of range");
-      unexpected(!(_locate_teil(mv.to()).is_black() || _locate_teil(mv.to()).is_white()), "object to be undo move is not an amazon");
-      unexpected(mv.from() != mv.arrow() && !_locate_teil(mv.from()).is_empty(), "amazon to be undo move doesn't have an empty source");
-      unexpected(!_locate_teil(mv.arrow()).is_arrow(), "arrow to be undo placement is not exist");
+      unexpect(!between_0_8(ax) || !between_0_8(ay), "move::arrow out of range");
+      unexpect(!(_locate_teil(mv.to()).is_black() || _locate_teil(mv.to()).is_white()), "object to be undo move is not an amazon");
+      unexpect(mv.from() != mv.arrow() && !_locate_teil(mv.from()).is_empty(), "amazon to be undo move doesn't have an empty source");
+      unexpect(!_locate_teil(mv.arrow()).is_arrow(), "arrow to be undo placement is not exist");
 #endif
     }
   private:
@@ -286,38 +285,7 @@ namespace yrq_new
       teil::type::empty , teil::type::empty ,teil::type::black ,teil::type::empty ,teil::type::empty ,teil::type::white ,teil::type::empty ,teil::type::empty
     };
   };
-  class interactor {
-  public:
-    interactor(board& bd) :_bd(bd) {}
-    void output(const move& mv) {
-      auto [fx, fy] = mv.from();
-      auto [tx, ty] = mv.to();
-      auto [ax, ay] = mv.arrow();
-      cout << fx << ' ' << fy << ' ' << tx << ' ' << ty << ' ' << ax << ' ' << ay;
-    }
-    bool input() {
-      int turn, from_x, from_y, to_x, to_y, arrow_x, arrow_y;
-      bool is_black = false;
-      cin >> turn;
-      for (int i = 0; i < turn; ++i) {
-        cin >> from_x >> from_y >> to_x >> to_y >> arrow_x >> arrow_y;
-        if (from_x == -1) is_black = true;
-        else
-          _mvs.emplace_back(from_x, from_y, to_x, to_y, arrow_x, arrow_y);
-        if (i < turn - 1) {
-          cin >> from_x >> from_y >> to_x >> to_y >> arrow_x >> arrow_y;
-          if (from_x >= 0)
-            _mvs.emplace_back(from_x, from_y, to_x, to_y, arrow_x, arrow_y);
-        }
-      }
-      _bd.make_moves(_mvs);
-      return is_black;
-    }
-    const vector<move>& history_moves() const { return _mvs; }
-  private:
-    vector<move> _mvs;
-    board& _bd;
-  };
+
   class evaluator {
     using distance_matrix = uint8_t[8][8];
     using distance_matrix_group = array<distance_matrix, 4>;

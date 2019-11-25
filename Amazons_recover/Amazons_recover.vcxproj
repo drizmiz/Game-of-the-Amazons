@@ -81,6 +81,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -159,6 +160,7 @@
   <ItemGroup>
     <ClInclude Include="csbd.h" />
     <ClInclude Include="eval.h" />
+    <ClInclude Include="eval_rewrite.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="original_eval.h" />
     <ClInclude Include="refactored_eval.h" />

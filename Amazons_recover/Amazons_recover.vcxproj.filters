@@ -44,5 +44,8 @@
     <ClInclude Include="searcher.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="eval_rewrite.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
