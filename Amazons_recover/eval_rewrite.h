@@ -20,7 +20,7 @@ namespace eval_adj	// evaluation adjusted
 		}
 #endif
 	}
-	void append_log(string msg, bool always = false) {
+	inline void append_log(const string& msg, bool always = false) {
 #ifdef _DEBUG
 		if (always) ofs << msg << endl;
 		else {

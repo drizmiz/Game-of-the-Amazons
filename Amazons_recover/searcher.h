@@ -74,7 +74,7 @@ namespace amz
 
 	inline bool chess_game::_Permit_null()
 	{
-		return turn_cnt <= 12;
+		return turn_cnt <= 10;
 	}
 
 	constexpr int _null_cut = 1;
@@ -85,15 +85,6 @@ namespace amz
 		const auto [_val, mm_hash] = rt.probe_hash(this->get_status(), depth, alpha, beta);
 		if (_val != unknown)
 			return _val;
-		// 空着裁剪
-		if (!_no_null && _Permit_null()) 
-		{
-			null_move();
-			eval_t ev = -_Alphabeta(depth - 1 - _null_cut, -beta, -(beta - 1), true);
-			null_move();	// same as undo_null_move
-			if (ev >= beta)
-				return ev;
-		}
 		// 超时
 		auto end = steady_clock::now();
 		auto diff = duration_cast<std::chrono::milliseconds>(end - starttime).count();
@@ -117,6 +108,15 @@ namespace amz
 			const eval_t val = _Evaluate(this->get_status(), this->get_color());
 			// rt.record_hash(this->get_status(), , depth, val, node_f::pv);
 			return val;
+		}
+		// 空着裁剪
+		if (!_no_null && _Permit_null())
+		{
+			null_move();
+			eval_t ev = -_Alphabeta(depth - 1 - _null_cut, -beta, -(beta - 1), true);
+			null_move();	// same as undo_null_move
+			if (ev >= beta)
+				return ev;
 		}
 		// 初始化搜索
 		node_f flag = node_f::alpha;
@@ -160,17 +160,14 @@ namespace amz
 		// 记录置换表
 		rt.record_hash(this->get_status(), mm_best, depth, eval_max, flag);
 		if (!_Is_dft_move(mm_best)) // not alpha node
-		{
 			rt.record_history(mm_best, depth);
-		}
 		return eval_max;
 	}
 	
-	movement chess_game::_Root_search(int depth, eval_t alpha, eval_t beta)
+	std::pair<eval_t, movement> chess_game::_Root_search(int depth)
 	{
 		movement mm_hash = dft_movement;
 		// 初始化搜索
-		node_f flag = node_f::alpha;
 		eval_t eval_max = -inf;
 		movement mm_best = dft_movement;
 
@@ -182,37 +179,25 @@ namespace amz
 			// PVS
 			eval_t eval = -inf;
 			if (eval_max == -inf)
-				eval = -_Alphabeta(depth - 1, -beta, -alpha);
+				eval = -_Alphabeta(depth - 1, -inf, inf, true);
 			else
 			{
-				eval = -_Alphabeta(depth - 1, -alpha - 1, -alpha);
-				if ((eval > alpha) && (eval < beta))
-					eval = -_Alphabeta(depth - 1, -beta, -alpha);
+				eval = -_Alphabeta(depth - 1, -(eval_max + 1), -eval_max);
+				if (eval > eval_max)
+					eval = -_Alphabeta(depth - 1, -inf, -eval_max, true);
 			}
 			unmake_move(mm);
 
 			if (eval > eval_max)
 			{
 				eval_max = eval;
-				if (eval >= beta)
-				{
-					flag = node_f::beta;
-					mm_best = mm;
-					break;
-				}
-				if (eval > alpha)
-				{
-					flag = node_f::pv;
-					mm_best = mm;
-					alpha = eval;
-				}
+				mm_best = mm;
 			}
 		}
 		// 记录置换表
-		rt.record_hash(this->get_status(), mm_best, depth, eval_max, flag);
-		// 搜索根节点时，总有mm_best(因为全窗口搜索不会超出边界)
+		rt.record_hash(this->get_status(), mm_best, depth, eval_max, node_f::pv);
 		rt.record_history(mm_best, depth);
-		return mm_best;
+		return { eval_max,mm_best };
 	}
 	movement chess_game::_Search_till_timeout() // unit: ms
 	{
@@ -223,7 +208,9 @@ namespace amz
 		eval_t eval = _Evaluate(this->get_status(), this->get_color());
 		for (int i = 1; ; ++i)
 		{
-			mm_best = _Root_search(i, -inf, inf);
+			auto res = _Root_search(i);
+			mm_best = res.second;
+			eval = res.first;
 			if (timespan == 0)
 			{
 #ifndef __GNUC__

@@ -16,13 +16,13 @@ namespace amz
 			return !(_from == mm2._from && _to == mm2._to && _obs == mm2._obs);
 		}
 
-		const std::tuple<len_t, len_t>& from() const {
+		const std::tuple<len_t, len_t> from() const {
 			return get_ij(_from);
 		}
-		const std::tuple<len_t, len_t>& to() const {
+		const std::tuple<len_t, len_t> to() const {
 			return get_ij(_to);
 		}
-		const std::tuple<len_t, len_t>& arrow() const {
+		const std::tuple<len_t, len_t> arrow() const {
 			return get_ij(_obs);
 		}
 
@@ -145,7 +145,8 @@ namespace amz
 		//movement _Root_search(int depth);
 		eval_t MTD_f(int depth, eval_t test);
 		movement _Root_search(int depth, eval_t alpha, eval_t beta, eval_t& test);
-		movement _Root_search(int depth, eval_t alpha, eval_t beta);
+		std::pair<eval_t, movement> _Root_search(int depth, eval_t alpha, eval_t beta);
+		std::pair<eval_t, movement> _Root_search(int depth);
 		movement _Search_till_timeout();
 		bit_table _Mine() noexcept
 		{
@@ -219,13 +220,11 @@ namespace amz
 		}
 		inline void init() noexcept { _cs.init(); }
 
-
-
 		movement generate_next_move()
 		{
 			starttime = std::chrono::steady_clock::now();
 
-			timespan = get_turn() <= 3 ? 350 : get_turn() <= 4 ? 600 : get_turn() <= 5 ? 700 : 750;
+			timespan = get_turn() <= 1 ? 350 : get_turn() <= 2 ? 450 : get_turn() <= 3 ? 600 : get_turn() <= 4 ? 650 : get_turn() <= 5 ? 700 : 750;
 
 			return _Search_till_timeout();
 		}
