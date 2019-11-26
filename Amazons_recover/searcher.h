@@ -77,7 +77,7 @@ namespace amz
 		return turn_cnt <= 11;
 	}
 
-	constexpr int _null_cut = 1;
+	constexpr int _null_cut = 2;
 	eval_t chess_game::_Alphabeta(int depth, eval_t alpha, eval_t beta, bool _no_null = false)
 	{
 		using namespace std::chrono;

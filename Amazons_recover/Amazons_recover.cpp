@@ -45,7 +45,7 @@ int main()
 	cg.make_move(mm);
 	sio::output(cout, mm);
 	cout << "DEBUG Info: ";
-	_Debug_evaluate_bz(cg.get_status(), _Color_rev(cg.get_color()));
+	_Debug_evaluate_bz(cg.get_status(), _Color_rev(cg.get_color()), cg.get_turn());
 	cout << endl;
 	return 0;
 }

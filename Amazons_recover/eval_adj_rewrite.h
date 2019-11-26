@@ -183,25 +183,21 @@ namespace eval_adj	// evaluation adjusted
 			vector<tuple<int, int>> open;
 			bitset<64> closed;
 
-			open.reserve(64);
-
-			auto eigen_value = [](tuple<int, int> pair) {
-				auto [x, y] = pair;
-				return (uint8_t)x << 3 | (uint8_t)y;
-			};
+			open.reserve(32);
 
 			open.push_back(from);
 			auto [fx, fy] = from;
 			distance[fx][fy] = 0;
 
-			while (!open.empty()) {
+			for (; !open.empty();)
+			{
 				auto tmp = open.back();
 				auto [x, y] = tmp;
 				uint8_t w = distance[x][y];
 
 				open.pop_back();
-				closed[eigen_value(tmp)] = 1;
-
+				closed[get_i(x,y)] = 1;
+#ifdef origin
 				for (int i = x + 1; i < 8; ++i) {
 					if (!_bd(i, y).is_empty()) break;
 					if (!closed[eigen_value({ i, y })]) {
@@ -258,6 +254,17 @@ namespace eval_adj	// evaluation adjusted
 						distance[i][j] = min(distance[i][j], (uint8_t)(w + 1));
 					}
 				}
+#endif
+				auto my_moves = amz::get_all_possible_i(_bd.get_table(), get_i(x, y));
+				for (auto i : my_moves)
+				{
+					auto [x1, y1] = get_ij(i);
+					if (!closed[get_i( x1,y1 )])
+					{
+						open.push_back({ x1,y1 });
+						distance[x1][y1] = min(distance[x1][y1], (uint8_t)(w + 1));
+					}
+				}
 			}
 			distance[fx][fy] = 255;
 		}
@@ -266,11 +273,6 @@ namespace eval_adj	// evaluation adjusted
 			bitset<64> closed;
 
 			open.reserve(32);
-
-			auto eigen_value = [](tuple<int, int> pair) {
-				auto [x, y] = pair;
-				return (uint8_t)x << 3 | (uint8_t)y;
-			};
 
 			open.push_back(from);
 			auto [fx, fy] = from;
@@ -282,37 +284,37 @@ namespace eval_adj	// evaluation adjusted
 				uint8_t w = distance[x][y];
 
 				open.pop_back();
-				closed[eigen_value(tmp)] = 1;
+				closed[get_i(x,y)] = 1;
 
-				if (x + 1 < 8) if (_bd(x + 1, y).is_empty() && !closed[eigen_value({ x + 1, y })]) {
+				if (x + 1 < 8) if (_bd(x + 1, y).is_empty() && !closed[get_i({ x + 1, y })]) {
 					open.emplace_back(x + 1, y);
 					distance[x + 1][y] = min(distance[x + 1][y], (uint8_t)(w + 1));
 				}
-				if (x - 1 >= 0) if (_bd(x - 1, y).is_empty() && !closed[eigen_value({ x - 1, y })]) {
+				if (x - 1 >= 0) if (_bd(x - 1, y).is_empty() && !closed[get_i( x - 1, y )]) {
 					open.emplace_back(x - 1, y);
 					distance[x - 1][y] = min(distance[x - 1][y], (uint8_t)(w + 1));
 				}
-				if (y + 1 < 8) if (_bd(x, y + 1).is_empty() && !closed[eigen_value({ x, y + 1 })]) {
+				if (y + 1 < 8) if (_bd(x, y + 1).is_empty() && !closed[get_i( x, y + 1 )]) {
 					open.emplace_back(x, y + 1);
 					distance[x][y + 1] = min(distance[x][y + 1], (uint8_t)(w + 1));
 				}
-				if (y - 1 >= 0) if (_bd(x, y - 1).is_empty() && !closed[eigen_value({ x, y - 1 })]) {
+				if (y - 1 >= 0) if (_bd(x, y - 1).is_empty() && !closed[get_i( x, y - 1 )]) {
 					open.emplace_back(x, y - 1);
 					distance[x][y - 1] = min(distance[x][y - 1], (uint8_t)(w + 1));
 				}
-				if (x + 1 < 8 && y + 1 < 8) if (_bd(x + 1, y + 1).is_empty() && !closed[eigen_value({ x + 1, y + 1 })]) {
+				if (x + 1 < 8 && y + 1 < 8) if (_bd(x + 1, y + 1).is_empty() && !closed[get_i( x + 1, y + 1 )]) {
 					open.emplace_back(x + 1, y + 1);
 					distance[x + 1][y + 1] = min(distance[x + 1][y + 1], (uint8_t)(w + 1));
 				}
-				if (x - 1 >= 0 && y + 1 < 8) if (_bd(x - 1, y + 1).is_empty() && !closed[eigen_value({ x - 1, y + 1 })]) {
+				if (x - 1 >= 0 && y + 1 < 8) if (_bd(x - 1, y + 1).is_empty() && !closed[get_i( x - 1, y + 1 )]) {
 					open.emplace_back(x - 1, y + 1);
 					distance[x - 1][y + 1] = min(distance[x - 1][y + 1], (uint8_t)(w + 1));
 				}
-				if (x + 1 < 8 && y - 1 >= 0) if (_bd(x + 1, y - 1).is_empty() && !closed[eigen_value({ x + 1, y - 1 })]) {
+				if (x + 1 < 8 && y - 1 >= 0) if (_bd(x + 1, y - 1).is_empty() && !closed[get_i( x + 1, y - 1 )]) {
 					open.emplace_back(x + 1, y - 1);
 					distance[x + 1][y - 1] = min(distance[x + 1][y - 1], (uint8_t)(w + 1));
 				}
-				if (x - 1 >= 0 && y - 1 >= 0) if (_bd(x - 1, y - 1).is_empty() && !closed[eigen_value({ x - 1, y - 1 })]) {
+				if (x - 1 >= 0 && y - 1 >= 0) if (_bd(x - 1, y - 1).is_empty() && !closed[get_i( x - 1, y - 1 )]) {
 					open.emplace_back(x - 1, y - 1);
 					distance[x - 1][y - 1] = min(distance[x - 1][y - 1], (uint8_t)(w + 1));
 				}
@@ -376,11 +378,14 @@ namespace eval_adj	// evaluation adjusted
 				{
 					constexpr int upper_bound = 8;
 					for (int i0 = 0; i0 < upper_bound; ++i0)
-						if (_flat_dm_1(i0)[i][j] != 255) {
+						if (_flat_dm_1(i0)[i][j] != 255) 
+						{
 							for (int j0 = 0; j0 < upper_bound; ++j0)
-								if (i0 == j0) continue;
-								else if (_flat_dm_1(j0)[i][j] != 255)
-									goto end1;
+								if (i0 == j0)
+									continue;
+								else
+									if (_flat_dm_1(j0)[i][j] != 255)
+										goto end1;
 							++exclusive_access_num[i0 / 4][i0 % 4];
 							goto end1;
 						}
@@ -392,12 +397,16 @@ namespace eval_adj	// evaluation adjusted
 				{
 					constexpr int upper_bound = 4;
 					for (int i0 = 0; i0 < upper_bound; ++i0)
-						if (_self_dm_1(i0)[i][j]) {
+						if (_self_dm_1(i0)[i][j])
+						{
 							for (int j0 = 0; j0 < upper_bound; ++j0)
-								if (i0 == j0) continue;
-								else if (_self_dm_1(j0)[i][j])
-									goto end2;
-							if (_merged_dm_1[1][i][j] == 1)  ++common_access_num[0][i0];
+								if (i0 == j0)
+									continue;
+								else
+									if (_self_dm_1(j0)[i][j])
+										goto end2;
+							if (_merged_dm_1[1][i][j] == 1)  
+								++common_access_num[0][i0];
 							goto end2;
 						}
 				end2:
@@ -408,12 +417,16 @@ namespace eval_adj	// evaluation adjusted
 				{
 					constexpr int upper_bound = 4;
 					for (int i0 = 0; i0 < upper_bound; ++i0)
-						if (_opponent_dm_1(i0)[i][j]) {
+						if (_opponent_dm_1(i0)[i][j])
+						{
 							for (int j0 = 0; j0 < upper_bound; ++j0)
-								if (i0 == j0) continue;
-								else if (_opponent_dm_1(j0)[i][j])
-									goto end3;
-							if (_merged_dm_1[0][i][j] == 1)  ++common_access_num[1][i0];
+								if (i0 == j0)
+									continue;
+								else
+									if (_opponent_dm_1(j0)[i][j])
+										goto end3;
+							if (_merged_dm_1[0][i][j] == 1) 
+								++common_access_num[1][i0];
 							goto end3;
 						}
 				end3:

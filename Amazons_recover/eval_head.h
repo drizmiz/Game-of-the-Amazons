@@ -59,6 +59,10 @@ namespace eval_adj	// evaluation adjusted
 		const teil operator()(len_t x, len_t y) const {
 			return _locate_teil(x, y);
 		}
+		amz::bit_table get_table()const
+		{
+			return _cs.get_all();
+		}
 		void _output_board() {
 			_Debug_paint(_cs);
 			// append_log(str, true);
