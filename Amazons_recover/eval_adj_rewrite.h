@@ -286,7 +286,7 @@ namespace eval_adj	// evaluation adjusted
 				open.pop_back();
 				closed[get_i(x,y)] = 1;
 
-				if (x + 1 < 8) if (_bd(x + 1, y).is_empty() && !closed[get_i( x + 1, y )]) {
+				if (x + 1 < 8) if (_bd(x + 1, y).is_empty() && !closed[get_i({ x + 1, y })]) {
 					open.emplace_back(x + 1, y);
 					distance[x + 1][y] = min(distance[x + 1][y], (uint8_t)(w + 1));
 				}
