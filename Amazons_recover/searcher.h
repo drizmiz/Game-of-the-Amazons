@@ -74,7 +74,7 @@ namespace amz
 
 	inline bool chess_game::_Permit_null()
 	{
-		return turn_cnt <= 10;
+		return turn_cnt <= 11;
 	}
 
 	constexpr int _null_cut = 1;
@@ -100,12 +100,12 @@ namespace amz
 		if (diff > timespan)
 		{
 			timespan = 0;
-			return _Evaluate(this->get_status(), this->get_color());
+			return _Evaluate(this->get_status(), this->get_color(), turn_cnt);
 		}
 		// 到达深度
 		if (depth <= 0)
 		{
-			const eval_t val = _Evaluate(this->get_status(), this->get_color());
+			const eval_t val = _Evaluate(this->get_status(), this->get_color(), turn_cnt);
 			// rt.record_hash(this->get_status(), , depth, val, node_f::pv);
 			return val;
 		}
@@ -114,7 +114,7 @@ namespace amz
 		{
 			null_move();
 			eval_t ev = -_Alphabeta(depth - 1 - _null_cut, -beta, -(beta - 1), true);
-			null_move();	// same as undo_null_move
+			undo_null_move();
 			if (ev >= beta)
 				return ev;
 		}
@@ -205,7 +205,7 @@ namespace amz
 		this->rt.clear();
 
 		movement mm_best = dft_movement;
-		eval_t eval = _Evaluate(this->get_status(), this->get_color());
+		eval_t eval = _Evaluate(this->get_status(), this->get_color(), turn_cnt);
 		for (int i = 1; ; ++i)
 		{
 			auto res = _Root_search(i);
@@ -233,7 +233,7 @@ namespace amz
 			for (movement mm; !_Is_dft_move(mm = mmsrt.next());)
 			{
 				make_move(mm);
-				const eval_t cur_eval = -_Evaluate(this->get_status(), this->get_color());
+				const eval_t cur_eval = -_Evaluate(this->get_status(), this->get_color(), turn_cnt);
 				if (eval_max <= cur_eval)
 				{
 					eval_max = cur_eval;

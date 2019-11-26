@@ -9,12 +9,12 @@ int main()
 {
 	using namespace std;
 	using namespace amz;
+	ios::sync_with_stdio(false);
 	amz::initialize();
 	amz::chess_game cg = sio::input(cin);
-	bool add_turn = false;
 	for (;;)
 	{
-		cout << "------ turn " << cg.get_turn() << " ------"<<endl;
+		cout << "------ turn " << cg.get_turn() << " ------" << endl;
 		using namespace chrono;
 		auto starttime = steady_clock::now();
 		const movement mm = cg.generate_next_move();
@@ -28,15 +28,8 @@ int main()
 		cout << (cg.get_color() == chess_color::black ? "black move: " : "white move: ") << endl;
 		sio::output(cout, mm);
 		cout << "DEBUG Info: ";
-		_Debug_evaluate_bz(cg.get_status(), _Color_rev(cg.get_color()));
+		_Debug_evaluate_bz(cg.get_status(), _Color_rev(cg.get_color()), cg.get_turn());
 		cout << endl;
-		if (add_turn)
-		{
-			cg.set_turn(cg.get_turn() + 1);
-			add_turn = !add_turn;
-		}
-		else
-			add_turn = !add_turn;
 	}
 	return 0;
 }
@@ -45,6 +38,7 @@ int main()
 {
 	using namespace std;
 	using namespace amz;
+	ios::sync_with_stdio(false);
 	amz::initialize();
 	amz::chess_game cg = sio::input(cin);
 	const movement mm = cg.generate_next_move();

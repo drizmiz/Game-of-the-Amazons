@@ -160,10 +160,10 @@
   <ItemGroup>
     <ClInclude Include="csbd.h" />
     <ClInclude Include="eval.h" />
-    <ClInclude Include="eval_rewrite.h" />
+    <ClInclude Include="eval_adj_rewrite.h" />
+    <ClInclude Include="eval_head.h" />
     <ClInclude Include="game.h" />
-    <ClInclude Include="original_eval.h" />
-    <ClInclude Include="refactored_eval.h" />
+    <ClInclude Include="refactored_adj_eval.h" />
     <ClInclude Include="searcher.h" />
     <ClInclude Include="sio.h" />
     <ClInclude Include="std.h" />

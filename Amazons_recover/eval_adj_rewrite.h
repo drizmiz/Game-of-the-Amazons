@@ -1,26 +1,72 @@
 
 #pragma once
 
+#include "std.h"
 #include "eval_head.h"
 
-namespace eval_adj
+// #define THROW_EXCEPTION
+
+namespace eval_adj	// evaluation adjusted
 {
+	//ÆÀ¹À¼ÓÈ¨Æ÷
+
+	constexpr double w_t1[28] = { 0.1080, 0.1080, 0.1235, 0.1332, 0.1400, 0.1468, 0.1565, 0.1720, 0.1949, 0.2217, 0.2476, 0.2680, 0.2800, 0.2884, 0.3000, 0.3208, 0.3535, 0.4000, 0.4613, 0.5350, 0.6181, 0.7075, 0.8000, 0.9000, 0.9000,0.9000, 0.9000, 0.9000 };
+	constexpr double w_t2[28] = { 0.3940, 0.3940, 0.3826, 0.3753, 0.3700, 0.3647, 0.3574, 0.3460, 0.3294, 0.3098, 0.2903, 0.2740, 0.2631, 0.2559, 0.2500, 0.2430, 0.2334, 0.2200, 0.2020, 0.1800, 0.1550, 0.1280, 0.1000, 0.0500, 0.0500, 0.0500, 0.0500, 0.0500 };
+	constexpr double w_c[28] = { 0.1160, 0.1160, 0.1224, 0.1267, 0.1300, 0.1333, 0.1376, 0.1440, 0.1531, 0.1640, 0.1754, 0.1860, 0.1944, 0.1995, 0.2000, 0.1950, 0.1849, 0.1700, 0.1510, 0.1287, 0.1038, 0.0773, 0.0500, 0.0250, 0.0250, 0.0500, 0.0500, 0.0500 };
+	constexpr double w_m[28] = { 0.2300, 0.2300, 0.2159, 0.2067, 0.2000, 0.1933, 0.1841, 0.1700, 0.1496, 0.1254, 0.1010, 0.0800, 0.0652, 0.0557, 0.0500, 0.0464, 0.0436, 0.0400, 0.0346, 0.0274, 0.0190, 0.0097, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000 };
+	class evaluation_weight_function {
+	public:
+		evaluation_weight_function() {
+#if false
+#ifdef _BOTZONE_ONLINE
+			ifstream ifs("./data/weight.txt");
+#else
+			ifstream ifs("weight.txt");
+#endif // _BOTZONE_ONLINE
+			for (int i = 0; i < 28; ++i)
+				ifs >> w_t1[i];
+			for (int i = 0; i < 28; ++i)
+				ifs >> w_t2[i];
+			for (int i = 0; i < 28; ++i)
+				ifs >> w_c[i];
+			for (int i = 0; i < 28; ++i)
+				ifs >> w_m[i];
+			ifs.close();
+#endif
+		}
+		double f_w_t1(size_t w, double v) const {
+			return v * w_t1[w];
+		}
+
+		double f_w_t2(size_t w, double v) const {
+			return v * w_t2[w];
+		}
+		double f_w_c(size_t w, double v) const {
+
+			return v * w_c[w];
+		}
+		double f_w_m(size_t w, double v) const {
+			return v * w_m[w];
+		}
+	};
+
+	//ÆÀ¹ÀÆ÷
 	class evaluator {
 		using distance_matrix = uint8_t[8][8];
 		using distance_matrix_group = array<distance_matrix, 4>;
-		friend int amz::_Debug_evaluate(const chess_status& cs, chess_color color, std::ostream& out);
+		friend int amz::_Debug_evaluate(const chess_status& cs, chess_color color,int turn_cnt, std::ostream& out);
 	public:
-		evaluator(const player& pl, const board& bd) :_pl(pl), _bd(bd) {
-			for (auto& dmg : dm_1)
+		evaluator(const board& bd, const player& pl, size_t turn, const evaluation_weight_function& ewf) : _bd(bd), _pl(pl), _turn(turn), _ewf(ewf) {
+			for (auto& dmg : _dm_1)
 				for (auto& dm : dmg)
 					memset(dm, (uint8_t)(-1), 64);
-			for (auto& dmg : dm_2)
+			for (auto& dmg : _dm_2)
 				for (auto& dm : dmg)
 					memset(dm, (uint8_t)(-1), 64);
-			memset(merged_dm_1[0], (uint8_t)(-1), 64);
-			memset(merged_dm_1[1], (uint8_t)(-1), 64);
-			memset(merged_dm_2[0], (uint8_t)(-1), 64);
-			memset(merged_dm_2[1], (uint8_t)(-1), 64);
+			memset(_merged_dm_1[0], (uint8_t)(-1), 64);
+			memset(_merged_dm_1[1], (uint8_t)(-1), 64);
+			memset(_merged_dm_2[0], (uint8_t)(-1), 64);
+			memset(_merged_dm_2[1], (uint8_t)(-1), 64);
 		}
 		double evaluate() {
 			double r = 0;
@@ -29,8 +75,9 @@ namespace eval_adj
 			double t = _territory_ingredient();
 			double m = _mobility_ingredient();
 			double d = _distribution_ingredient();
-			r = t + m + d;
-			append_log("t m d r:" + to_string(t) + " " + to_string(m) + " " + to_string(d) + " " + to_string(r), true);
+			double g = _guard_ingredient();
+			r = t + m + d + g;
+			append_log("t m d g r: " + to_string(t) + " " + to_string(m) + " " + to_string(d) + " " + to_string(g) + " " + to_string(r), true);
 			return r;
 		}
 		void _output_board() {
@@ -38,28 +85,28 @@ namespace eval_adj
 			string str = "+----------DM1S----------+\n";
 			for (int i = 0; i < 8; ++i) {
 				for (int j = 0; j < 8; ++j)
-					str += to_string(merged_dm_1[0][j][i]) + std::string(4 - to_string(merged_dm_1[0][j][i]).size(), ' ');
+					str += to_string(_merged_dm_1[0][j][i]) + string(4 - to_string(_merged_dm_1[0][j][i]).size(), ' ');
 				str += "\n";
 			}
 			append_log(str);
 			str = "+----------DM1O----------+\n";
 			for (int i = 0; i < 8; ++i) {
 				for (int j = 0; j < 8; ++j)
-					str += to_string(merged_dm_1[1][j][i]) + std::string(4 - to_string(merged_dm_1[1][j][i]).size(), ' ');
+					str += to_string(_merged_dm_1[1][j][i]) + string(4 - to_string(_merged_dm_1[1][j][i]).size(), ' ');
 				str += "\n";
 			}
 			append_log(str);
 			str = "+----------DM2S----------+\n";
 			for (int i = 0; i < 8; ++i) {
 				for (int j = 0; j < 8; ++j)
-					str += to_string(merged_dm_2[0][j][i]) + std::string(4 - to_string(merged_dm_2[0][j][i]).size(), ' ');
+					str += to_string(_merged_dm_2[0][j][i]) + string(4 - to_string(_merged_dm_2[0][j][i]).size(), ' ');
 				str += "\n";
 			}
 			append_log(str);
 			str = "+----------DM2O----------+\n";
 			for (int i = 0; i < 8; ++i) {
 				for (int j = 0; j < 8; ++j)
-					str += to_string(merged_dm_2[1][j][i]) + std::string(4 - to_string(merged_dm_2[1][j][i]).size(), ' ');
+					str += to_string(_merged_dm_2[1][j][i]) + string(4 - to_string(_merged_dm_2[1][j][i]).size(), ' ');
 				str += "\n";
 			}
 			append_log(str);
@@ -68,22 +115,22 @@ namespace eval_adj
 	private:
 		void _generate_distance_matrix() {
 			int idx = 0;
-			for (const auto& m : _pl.self())
-				_single_queen_min_moves(m, dm_1[0][idx++]);
+			for (auto& m : _pl.self())
+				_single_queen_min_moves(m, _dm_1[0][idx++]);
 			idx = 0;
-			for (const auto& m : _pl.opponent())
-				_single_queen_min_moves(m, dm_1[1][idx++]);
+			for (auto& m : _pl.opponent())
+				_single_queen_min_moves(m, _dm_1[1][idx++]);
 			idx = 0;
-			for (const auto& m : _pl.self())
-				_single_king_min_moves(m, dm_2[0][idx++]);
+			for (auto& m : _pl.self())
+				_single_king_min_moves(m, _dm_2[0][idx++]);
 			idx = 0;
-			for (const auto& m : _pl.opponent())
-				_single_king_min_moves(m, dm_2[1][idx++]);
+			for (auto& m : _pl.opponent())
+				_single_king_min_moves(m, _dm_2[1][idx++]);
 
-			_merge_distance_matrix(merged_dm_1[0], dm_1[0]);
-			_merge_distance_matrix(merged_dm_1[1], dm_1[1]);
-			_merge_distance_matrix(merged_dm_2[0], dm_2[0]);
-			_merge_distance_matrix(merged_dm_2[1], dm_2[1]);
+			_merge_distance_matrix(_merged_dm_1[0], _dm_1[0]);
+			_merge_distance_matrix(_merged_dm_1[1], _dm_1[1]);
+			_merge_distance_matrix(_merged_dm_2[0], _dm_2[0]);
+			_merge_distance_matrix(_merged_dm_2[1], _dm_2[1]);
 		}
 		double _territory_determine_delta(uint8_t m, uint8_t n) {
 			if (m == 255 && n == 255) return 0;
@@ -99,26 +146,24 @@ namespace eval_adj
 					out[i][j] = min(min1, min2);
 				}
 		}
-		tuple<double, double, double> _t1_c1_w() {
-			double t1 = 0, c1 = 0, w = 0;
+		tuple<double, double> _t1_c1() {
+			double t1 = 0, c1 = 0;
 			for (int i = 0; i < 8; ++i)
 				for (int j = 0; j < 8; ++j) {
 					if (!_bd(i, j).is_empty()) continue;
-					t1 += _territory_determine_delta(merged_dm_1[0][i][j], merged_dm_1[1][i][j]);
-					c1 += pow(2.0, -merged_dm_1[0][i][j]) - pow(2.0, -merged_dm_1[1][i][j]);
-					w += pow(2.0, -abs(merged_dm_1[0][i][j] - merged_dm_1[1][i][j]));
+					t1 += _territory_determine_delta(_merged_dm_1[0][i][j], _merged_dm_1[1][i][j]);
+					c1 += pow(2.0, -_merged_dm_1[0][i][j]) - pow(2.0, -_merged_dm_1[1][i][j]);
 				}
 			c1 *= 2;
-			this->w = w;
-			return { t1, c1, w };
+			return { t1, c1 };
 		}
 		tuple<double, double>  _t2_c2() {
 			double t2 = 0, c2 = 0;
 			for (int i = 0; i < 8; ++i)
 				for (int j = 0; j < 8; ++j) {
 					if (!_bd(i, j).is_empty()) continue;
-					t2 += _territory_determine_delta(merged_dm_2[0][i][j], merged_dm_2[1][i][j]);
-					c2 += min(1.0, max(-1.0, (double)(merged_dm_2[1][i][j] - merged_dm_2[0][i][j]) / 6.0));
+					t2 += _territory_determine_delta(_merged_dm_2[0][i][j], _merged_dm_2[1][i][j]);
+					c2 += min(1.0, max(-1.0, (double)(_merged_dm_2[1][i][j] - _merged_dm_2[0][i][j]) / 6.0));
 				}
 			return { t2,c2 };
 		}
@@ -138,7 +183,7 @@ namespace eval_adj
 			vector<tuple<int, int>> open;
 			bitset<64> closed;
 
-			open.reserve(32);
+			open.reserve(64);
 
 			auto eigen_value = [](tuple<int, int> pair) {
 				auto [x, y] = pair;
@@ -279,22 +324,18 @@ namespace eval_adj
 			double a = 0.0;
 			for (int i = 0; i < 8; ++i)
 				for (int j = 0; j < 8; ++j)
-					if (merged_dm_1[1 - player_idx][i][j] != 255 && dm_1[player_idx][amazon_idx][i][j] <= 1)
-						a += pow(2.0, -dm_2[player_idx][amazon_idx][i][j] + 1) * _empty_neighbor_num(i, j);
+					if (_merged_dm_1[1 - player_idx][i][j] != 255 && _dm_1[player_idx][amazon_idx][i][j] <= 1)
+						a += pow(2.0, -_dm_2[player_idx][amazon_idx][i][j] + 1) * _empty_neighbor_num(i, j);
 			return a;
 		}
 		double _territory_ingredient() {
-			auto [t1, c1, w] = _t1_c1_w();
+			auto [t1, c1] = _t1_c1();
 			auto [t2, c2] = _t2_c2();
-			// f(t1,w) = [ 0.75 * 1.1 ^ (-w) + 0.25 ] * t1
-			auto f_w_t1 = [=](double v) { return (0.75 * pow(1.1, -w) + 0.25) * v; };
-			// f(t2,w) = [ 0.08 * sqrt( max { w-1 , 0 } ) ] * t2
-			auto f_w_t2 = [=](double v) { return (0.08 * sqrt(w - 1 > 0 ? w - 1 : 0))* v; };
-			// f(c1,w) = [ 1 - f_t1(w) - f_t2(w) ] * [ 0.6 * 1.1 ^ (-w) + 0.4 ] * c1
-			auto f_w_c1 = [=](double v) { return (1 - 0.75 * pow(1.1, -w) - 0.25 - 0.08 * sqrt(w - 1 > 0 ? w - 1 : 0))* (0.4 + 0.6 * pow(1.1, -w))* v; };
-			// f(c2,w) = [ 1 - f_t1(w) - f_t2(w) ] * [ 0.6 - 0.6 * 1.1 ^ (-w) ] * c2
-			auto f_w_c2 = [=](double v) { return (1 - 0.75 * pow(1.1, -w) - 0.25 - 0.08 * sqrt(w - 1 > 0 ? w - 1 : 0))* (1 - (0.4 + 0.6 * pow(1.1, -w)))* v; };
-			return f_w_t1(t1) + f_w_c1(c1) + f_w_t2(t2) + f_w_c2(c2);
+			return
+				_ewf.f_w_t1(_turn, t1) +
+				_ewf.f_w_t2(_turn, t2) +
+				_ewf.f_w_c(_turn, c1) +
+				_ewf.f_w_c(_turn, c2);
 		}
 		double _distribution_ingredient() {
 			double d1 = 0, d2 = 0;
@@ -312,26 +353,90 @@ namespace eval_adj
 				}
 			d1 = sqrt(d1 / 10.0);
 			d2 = sqrt(d2 / 10.0);
-			return w / 20.0 * (d1 - d2);
+			return (1 - _turn / 28) * (d1 - d2) * 0.6;
 		}
-
 		double _mobility_ingredient() {
 			double m1 = 0, m2 = 0;
-			auto f_w_m1 = [this](double m) {return (w < 5 ? 5 : w) * (50.0 - m) / 400.0; };
-			auto f_w_m2 = [this, &f_w_m1](double m) {return f_w_m1(m); };
 			for (int i = 0; i < 4; ++i)
-				m1 += f_w_m1(_amazon_mobility(0, (size_t)i));
+				m1 += _amazon_mobility(0, (size_t)i);
 			for (int i = 0; i < 4; ++i)
-				m2 += f_w_m2(_amazon_mobility(1, (size_t)i));
-			return m2 - m1;
+				m2 += _amazon_mobility(1, (size_t)i);
+			return _ewf.f_w_m(_turn, m1 - m2);
 		}
+		double _guard_ingredient() {
+			auto _flat_dm_1 = [this](size_t idx) {return _dm_1[idx / 4][idx % 4]; };
+			auto _self_dm_1 = [this](size_t idx) {return _dm_1[0][idx]; };
+			auto _opponent_dm_1 = [this](size_t idx) {return _dm_1[1][idx]; };
+
+			array<array<size_t, 4>, 2> exclusive_access_num = { 0 };
+			array<array<size_t, 4>, 2> common_access_num = { 0 };
+
+			for (int i = 0; i < 8; ++i)
+				for (int j = 0; j < 8; ++j)
+				{
+					constexpr int upper_bound = 8;
+					for (int i0 = 0; i0 < upper_bound; ++i0)
+						if (_flat_dm_1(i0)[i][j] != 255) {
+							for (int j0 = 0; j0 < upper_bound; ++j0)
+								if (i0 == j0) continue;
+								else if (_flat_dm_1(j0)[i][j] != 255)
+									goto end1;
+							++exclusive_access_num[i0 / 4][i0 % 4];
+							goto end1;
+						}
+				end1:
+					;
+				}
+			for (int i = 0; i < 8; ++i)
+				for (int j = 0; j < 8; ++j)
+				{
+					constexpr int upper_bound = 4;
+					for (int i0 = 0; i0 < upper_bound; ++i0)
+						if (_self_dm_1(i0)[i][j]) {
+							for (int j0 = 0; j0 < upper_bound; ++j0)
+								if (i0 == j0) continue;
+								else if (_self_dm_1(j0)[i][j])
+									goto end2;
+							if (_merged_dm_1[1][i][j] == 1)  ++common_access_num[0][i0];
+							goto end2;
+						}
+				end2:
+					;
+				}
+			for (int i = 0; i < 8; ++i)
+				for (int j = 0; j < 8; ++j)
+				{
+					constexpr int upper_bound = 4;
+					for (int i0 = 0; i0 < upper_bound; ++i0)
+						if (_opponent_dm_1(i0)[i][j]) {
+							for (int j0 = 0; j0 < upper_bound; ++j0)
+								if (i0 == j0) continue;
+								else if (_opponent_dm_1(j0)[i][j])
+									goto end3;
+							if (_merged_dm_1[0][i][j] == 1)  ++common_access_num[1][i0];
+							goto end3;
+						}
+				end3:
+					;
+				}
+
+			double sum = 0;
+			for (int i = 0; i < 4; ++i) {
+				sum += min((double)exclusive_access_num[0][i], (double)common_access_num[0][i] / 2.0);
+				sum -= min((double)exclusive_access_num[1][i], (double)common_access_num[1][i] / 2.0);
+			}
+			return sum / 5.0;
+		}
+
 	private:
-		const player& _pl;
 		const board& _bd;
-		double w = 0.0;
-		distance_matrix_group dm_1[2];
-		distance_matrix_group dm_2[2];
-		distance_matrix merged_dm_1[2];
-		distance_matrix merged_dm_2[2];
+		const player& _pl;
+		size_t _turn;
+		const evaluation_weight_function& _ewf;
+		distance_matrix_group _dm_1[2];
+		distance_matrix_group _dm_2[2];
+		distance_matrix _merged_dm_1[2];
+		distance_matrix _merged_dm_2[2];
 	};
+
 }

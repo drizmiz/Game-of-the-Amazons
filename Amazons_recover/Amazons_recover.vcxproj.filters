@@ -23,9 +23,6 @@
     <ClInclude Include="std.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="refactored_eval.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="csbd.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -35,16 +32,19 @@
     <ClInclude Include="sio.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="original_eval.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="eval.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="searcher.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="eval_rewrite.h">
+    <ClInclude Include="refactored_adj_eval.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="eval_adj_rewrite.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="eval_head.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

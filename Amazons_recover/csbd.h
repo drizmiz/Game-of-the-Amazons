@@ -663,8 +663,8 @@ namespace amz // chess board
 
 		friend class chess_game;
 		friend void _Debug_paint(const chess_status&);
-		friend int _Evaluate(const chess_status& cs, chess_color color);
-		friend int _Debug_evaluate(const amz::chess_status& cs, chess_color color, std::ostream&);
+		friend int _Evaluate(const chess_status& cs, chess_color color, int turn_cnt);
+		friend int _Debug_evaluate(const amz::chess_status& cs, chess_color color, int turn_cnt, std::ostream&);
 
 		uint64 _Hash() const noexcept
 		{

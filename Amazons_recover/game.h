@@ -138,6 +138,7 @@ namespace amz
 		long long timespan;
 		long long deadspan;
 		int turn_cnt;
+		bool _add_turn;
 
 		bool _Permit_null();
 		eval_t _Alphabeta(int depth, eval_t alpha, eval_t beta, bool _no_null);
@@ -148,6 +149,7 @@ namespace amz
 		std::pair<eval_t, movement> _Root_search(int depth, eval_t alpha, eval_t beta);
 		std::pair<eval_t, movement> _Root_search(int depth);
 		movement _Search_till_timeout();
+		
 		bit_table _Mine() noexcept
 		{
 			return my_color == chess_color::black ? _cs.black : _cs.white;
@@ -176,7 +178,7 @@ namespace amz
 		}
 	public:
 		chess_game() noexcept :
-			_cs(), my_color(chess_color::white), deadspan(950), turn_cnt(0)
+			_cs(), my_color(chess_color::white), deadspan(950), turn_cnt(0),_add_turn(false)
 		{}
 		inline chess_color get_color() noexcept { return my_color; }
 		inline void set_color(chess_color cc) noexcept { my_color = cc; }
@@ -189,6 +191,8 @@ namespace amz
 			_cs.move_piece(from, to, my_color);
 			_cs.place_obs(obs);
 			my_color = _Color_rev(my_color);
+			if (_add_turn)++turn_cnt;
+			_add_turn = !_add_turn;
 		}
 		inline void make_move(off_i_t from_i, off_i_t from_j, off_i_t to_i, off_i_t to_j,
 			off_i_t obs_i, off_i_t obs_j)noexcept
@@ -205,6 +209,8 @@ namespace amz
 		}
 		inline void unmake_move(off_i_t from, off_i_t to, off_i_t obs)noexcept
 		{
+			_add_turn = !_add_turn;
+			if (_add_turn)--turn_cnt;
 			my_color = _Color_rev(my_color);
 			_cs.unplace_obs(obs);
 			_cs.move_piece(to, from, my_color);
@@ -217,6 +223,14 @@ namespace amz
 		inline void null_move()
 		{
 			my_color = _Color_rev(my_color);
+			if (_add_turn)++turn_cnt;
+			_add_turn = !_add_turn;
+		}
+		inline void undo_null_move()
+		{
+			_add_turn = !_add_turn;
+			if (_add_turn)--turn_cnt;
+			my_color = _Color_rev(my_color);
 		}
 		inline void init() noexcept { _cs.init(); }
 
@@ -224,7 +238,7 @@ namespace amz
 		{
 			starttime = std::chrono::steady_clock::now();
 
-			timespan = get_turn() <= 1 ? 350 : get_turn() <= 2 ? 450 : get_turn() <= 3 ? 600 : get_turn() <= 4 ? 650 : get_turn() <= 5 ? 700 : 750;
+			timespan = get_turn() <= 1 ? 400 : get_turn() <= 2 ? 500 : get_turn() <= 3 ? 650 : get_turn() <= 5 ? 700 : get_turn() <= 6 ? 750 : 800;
 
 			return _Search_till_timeout();
 		}

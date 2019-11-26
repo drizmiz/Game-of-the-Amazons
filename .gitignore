@@ -342,3 +342,6 @@ healthchecksdb
 /Amazons_recover/Amazons_recover.txt
 /Amazons_recover/gen.bat
 /报告20191125-2210.diagsession
+/Amazons_recover/refactored_adj_eval.h
+/Amazons_recover/weight.txt
+*.diagsession

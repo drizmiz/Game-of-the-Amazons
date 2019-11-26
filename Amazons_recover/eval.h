@@ -6,7 +6,12 @@
 
 // #define _DEBUG
 // #include "refactored_eval.h"
-#include "eval_rewrite.h"
+// #include "eval_rewrite.h"
+#ifdef __GNUC__
+#define _BOTZONE_ONLINE
+#endif
+#include "eval_adj_rewrite.h"
+#include "csbd.h"
 // #undef _DEBUG
 
 namespace amz
@@ -130,20 +135,22 @@ namespace amz
 		return 0;
 	}
 #else
-	int _Evaluate(const chess_status& cs, chess_color color)
+	int _Evaluate(const chess_status& cs, chess_color color,int turn_cnt)
 	{
 		using namespace eval_adj;
 		player pl((color == chess_color::black), cs);
 		board brd(cs);
-		evaluator eval(pl, brd);
+		evaluation_weight_function ewf;
+		evaluator eval(brd, pl, turn_cnt, ewf);
 		return static_cast<int>(eval.evaluate() * 50);
 	}
-	int _Debug_evaluate(const chess_status& cs, chess_color color, std::ostream& out = std::cout)
+	int _Debug_evaluate(const chess_status& cs, chess_color color, int turn_cnt, std::ostream& out = std::cout)
 	{
 		using namespace eval_adj;
 		player pl((color == chess_color::black), cs);
 		board brd(cs);
-		evaluator ev(pl, brd);
+		evaluation_weight_function ewf;
+		evaluator ev(brd, pl, turn_cnt, ewf);
 
 		double r = 0;
 		ev._generate_distance_matrix();
@@ -174,10 +181,10 @@ namespace amz
 		return 0;
 	}
 #endif
-	int _Debug_evaluate_bz(const chess_status& cs, chess_color color)
+	int _Debug_evaluate_bz(const chess_status& cs, chess_color color,int turn_cnt)
 	{
 		std::stringstream ss;
-		_Debug_evaluate(cs, color, ss);
+		_Debug_evaluate(cs, color, turn_cnt, ss);
 		for (; ss;)
 		{
 			std::string s;
