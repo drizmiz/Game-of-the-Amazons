@@ -17,7 +17,6 @@ namespace sio // simple io
 
 		int turn = 0;
 		in >> turn;
-		cg.set_turn(turn);
 
 		int from_i{}, from_j{}, to_i{}, to_j{}, obs_i{}, obs_j{};
 
@@ -45,6 +44,8 @@ namespace sio // simple io
 				cg.make_move(from_i, from_j, to_i, to_j, obs_i, obs_j);
 			}
 		}
+
+		cg.set_turn(turn);
 		return cg;
 	}
 

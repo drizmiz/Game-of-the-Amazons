@@ -78,9 +78,12 @@ namespace amz
 	}
 
 	constexpr int _null_cut = 2;
-	constexpr int pvs_window = 1200;
+	int pvs_window = 12500;
 	eval_t chess_game::_Alphabeta(int depth, eval_t alpha, eval_t beta, bool _no_null = false)
 	{
+		pvs_window = 12500 / pow(1.6, turn_cnt);
+		if (pvs_window <= 100)pvs_window = 100;
+
 		using namespace std::chrono;
 		// ÖÃ»»±í²éÑ¯
 		const auto [_val, mm_hash] = rt.probe_hash(this->get_status(), depth, alpha, beta);

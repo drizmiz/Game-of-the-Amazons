@@ -58,7 +58,7 @@ namespace eval_adj	// evaluation adjusted
 		using distance_matrix_group = array<distance_matrix, 4>;
 		friend int amz::_Debug_evaluate(const chess_status& cs, chess_color color,int turn_cnt, std::ostream& out);
 	public:
-		evaluator(const board& bd, const player& pl, size_t turn, const evaluation_weight_function& ewf) : _bd(bd), _pl(pl), _turn(turn), _ewf(ewf) {
+		evaluator(const board& bd, const player& pl, int turn, const evaluation_weight_function& ewf) : _bd(bd), _pl(pl), _turn(turn), _ewf(ewf) {
 			for (auto& dmg : _dm_1)
 				for (auto& dm : dmg)
 					memset(dm, (uint8_t)(-1), 64);

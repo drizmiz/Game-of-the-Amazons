@@ -142,7 +142,7 @@ namespace amz
 		board brd(cs);
 		evaluation_weight_function ewf;
 		evaluator eval(brd, pl, turn_cnt, ewf);
-		return static_cast<int>(eval.evaluate() * 1000);
+		return static_cast<int>(eval.evaluate() * 10000);
 	}
 	int _Debug_evaluate(const chess_status& cs, chess_color color, int turn_cnt, std::ostream& out = std::cout)
 	{
@@ -163,9 +163,9 @@ namespace amz
 		tmp = ev._mobility_ingredient();
 		out << tmp << std::endl;
 		r += tmp;
-		// tmp = ev._guard_ingredient();
-		// out << tmp << std::endl;
-		// r += tmp;
+		tmp = ev._guard_ingredient();
+		out << tmp << std::endl;
+		r += tmp;
 		tmp = ev._distribution_ingredient();
 		out << tmp << std::endl;
 		r += tmp;
@@ -177,7 +177,7 @@ namespace amz
 		//ev._debug_printf_distance_matrix(ev.merged_dm_2[0]);
 		//std::cout << "merged_dm_2 player1:" << std::endl;
 		//ev._debug_printf_distance_matrix(ev.merged_dm_2[1]);
-		out << "eval: " << static_cast<int>(r * 1000) << std::endl;
+		out << "eval: " << static_cast<int>(r * 10000) << std::endl;
 		return 0;
 	}
 #endif
