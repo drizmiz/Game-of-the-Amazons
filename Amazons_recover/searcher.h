@@ -14,6 +14,8 @@ namespace amz
 	enum class phase
 	{
 		hash,
+		killer1,
+		killer2,
 		gen_moves,
 		rest
 	};
@@ -22,7 +24,7 @@ namespace amz
 	class chess_game::mm_sort
 	{
 	public:
-		movement mm_hash;
+		movement mm_hash, mm_killer1, mm_killer2;
 		phase cur_phase;
 		int mm_index;
 		std::vector<movement> mms;
@@ -30,7 +32,10 @@ namespace amz
 		chess_game& cg_parent;
 		mm_sort(chess_game& cg, movement _mm_hash) noexcept :
 			cg_parent(cg), mm_hash(_mm_hash), cur_phase(phase::hash), mms{}
-		{}
+		{
+			mm_killer1 = cg.rt.killer_moves[cg.distance][0];
+			mm_killer2 = cg.rt.killer_moves[cg.distance][1];
+		}
 
 		const movement next();
 	};
@@ -48,7 +53,7 @@ namespace amz
 				return mm_hash;
 			// 生成所有着法
 		case phase::gen_moves:
-			cur_phase = phase::rest;
+			cur_phase = phase::killer1;
 			mms = std::move(cg_parent._Get_all_possible_moves());
 			std::sort(mms.begin(), mms.end(),
 				[this](movement mm1, movement mm2) {
@@ -57,6 +62,17 @@ namespace amz
 				}
 			);
 			mm_index = 0;
+			// killer 启发
+		case phase::killer1:
+			cur_phase = phase::killer2;
+			if (mm_killer1 != mm_hash && !_Is_dft_move(mm_killer1))
+				if (std::find(mms.begin(), mms.end(), mm_killer1) != mms.end())
+					return mm_killer1;
+		case phase::killer2:
+			cur_phase = phase::rest;
+			if (mm_killer2 != mm_hash && !_Is_dft_move(mm_killer2))
+				if (std::find(mms.begin(), mms.end(), mm_killer2) != mms.end())
+					return mm_killer2;
 			// 历史表启发
 		case phase::rest:
 			for (; mm_index < mms.size();)
@@ -74,11 +90,12 @@ namespace amz
 
 	inline bool chess_game::_Permit_null()
 	{
-		return turn_cnt <= 11;
+		return turn_cnt <= 14;
 	}
 
 	constexpr int _null_cut = 2;
 	int pvs_window = 12500;
+	constexpr int limit_depth = 56;
 	eval_t chess_game::_Alphabeta(int depth, eval_t alpha, eval_t beta, bool _no_null = false)
 	{
 		pvs_window = 12500 / pow(1.6, turn_cnt);
@@ -107,7 +124,7 @@ namespace amz
 			return _Evaluate(this->get_status(), this->get_color(), turn_cnt);
 		}
 		// 到达深度
-		if (depth <= 0)
+		if (depth <= 0 || distance > limit_depth)
 		{
 			const eval_t val = _Evaluate(this->get_status(), this->get_color(), turn_cnt);
 			// rt.record_hash(this->get_status(), , depth, val, node_f::pv);
@@ -164,10 +181,21 @@ namespace amz
 		// 记录置换表
 		rt.record_hash(this->get_status(), mm_best, depth, eval_max, flag);
 		if (!_Is_dft_move(mm_best)) // not alpha node
-			rt.record_history(mm_best, depth);
+			_Set_best_move(mm_best, depth);
 		return eval_max;
 	}
-	
+
+	void chess_game::_Set_best_move(movement mm_best,int depth)
+	{
+		rt.record_history(mm_best, depth);
+		movement* lp_killers = rt.killer_moves[distance];
+		if (lp_killers[0] != mm_best)
+		{
+			lp_killers[1] = lp_killers[0];
+			lp_killers[0] = mm_best;
+		}
+	}
+
 	std::pair<eval_t, movement> chess_game::_Root_search(int depth)
 	{
 		movement mm_hash = dft_movement;
@@ -200,7 +228,7 @@ namespace amz
 		}
 		// 记录置换表
 		rt.record_hash(this->get_status(), mm_best, depth, eval_max, node_f::pv);
-		rt.record_history(mm_best, depth);
+		_Set_best_move(mm_best, depth);
 		return { eval_max,mm_best };
 	}
 	movement chess_game::_Search_till_timeout() // unit: ms
@@ -210,6 +238,9 @@ namespace amz
 
 		movement mm_best = dft_movement;
 		eval_t eval = _Evaluate(this->get_status(), this->get_color(), turn_cnt);
+
+		distance = 0;
+
 		for (int i = 1; ; ++i)
 		{
 			auto res = _Root_search(i);
@@ -225,7 +256,6 @@ namespace amz
 		}
 		if (_Is_dft_move(mm_best))
 		{
-
 			// 一层贪心
 			movement mm_hash = dft_movement;
 			// 初始化搜索

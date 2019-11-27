@@ -15,6 +15,10 @@ namespace amz
 		{
 			return !(_from == mm2._from && _to == mm2._to && _obs == mm2._obs);
 		}
+		bool operator==(const movement& mm2) const
+		{
+			return (_from == mm2._from && _to == mm2._to && _obs == mm2._obs);
+		}
 
 		const std::tuple<len_t, len_t> from() const {
 			return get_ij(_from);
@@ -56,6 +60,7 @@ namespace amz
 		alpha,
 		beta
 	};
+
 	class record_table
 	{
 	private:
@@ -70,10 +75,15 @@ namespace amz
 		hash_tag hash_table[hashtable_size];
 		int history_table[history_table_size];
 	public:
+		movement killer_moves[64][2];
+	public:
 		void clear()
 		{
 			memset(hash_table, 0, hashtable_size * sizeof(hash_tag));
 			memset(history_table, 0, history_table_size * sizeof(int));
+			for (int i = 0; i < 64; ++i)
+				for (int j = 0; j < 2; ++j)
+					killer_moves[i][j] = dft_movement;
 		}
 		void record_hash(const chess_status& cs, const movement& cur_move,
 			int depth, eval_t val, node_f hashf)
@@ -137,11 +147,15 @@ namespace amz
 		decltype(std::chrono::steady_clock::now()) starttime;
 		long long timespan;
 		long long deadspan;
+
 		int turn_cnt;
 		bool _add_turn;
+		int distance;
 
 		bool _Permit_null();
 		eval_t _Alphabeta(int depth, eval_t alpha, eval_t beta, bool _no_null);
+		void _Set_best_move(movement mm_best, int depth);
+		void _Set_best_move();
 		eval_t _Alphabeta(int depth, eval_t beta);
 		//movement _Root_search(int depth);
 		eval_t MTD_f(int depth, eval_t test);
@@ -188,6 +202,7 @@ namespace amz
 		inline void set_turn(int turn)noexcept { turn_cnt = turn; }
 		inline void make_move(off_i_t from, off_i_t to, off_i_t obs)noexcept
 		{
+			distance++;
 			_cs.move_piece(from, to, my_color);
 			_cs.place_obs(obs);
 			my_color = _Color_rev(my_color);
@@ -210,10 +225,12 @@ namespace amz
 		inline void unmake_move(off_i_t from, off_i_t to, off_i_t obs)noexcept
 		{
 			_add_turn = !_add_turn;
-			if (_add_turn)--turn_cnt;
+			if (_add_turn)
+				--turn_cnt;
 			my_color = _Color_rev(my_color);
 			_cs.unplace_obs(obs);
 			_cs.move_piece(to, from, my_color);
+			distance--;
 		}
 		inline void unmake_move(movement mm) noexcept
 		{
@@ -222,15 +239,19 @@ namespace amz
 		}
 		inline void null_move()
 		{
+			distance++;
 			my_color = _Color_rev(my_color);
-			if (_add_turn)++turn_cnt;
+			if (_add_turn)
+				++turn_cnt;
 			_add_turn = !_add_turn;
 		}
 		inline void undo_null_move()
 		{
 			_add_turn = !_add_turn;
-			if (_add_turn)--turn_cnt;
+			if (_add_turn)
+				--turn_cnt;
 			my_color = _Color_rev(my_color);
+			distance--;
 		}
 		inline void init() noexcept { _cs.init(); }
 
