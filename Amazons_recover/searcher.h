@@ -78,6 +78,7 @@ namespace amz
 	}
 
 	constexpr int _null_cut = 2;
+	constexpr int pvs_window = 1200;
 	eval_t chess_game::_Alphabeta(int depth, eval_t alpha, eval_t beta, bool _no_null = false)
 	{
 		using namespace std::chrono;
@@ -113,7 +114,7 @@ namespace amz
 		if (!_no_null && _Permit_null())
 		{
 			null_move();
-			eval_t ev = -_Alphabeta(depth - 1 - _null_cut, -beta, -(beta - 1), true);
+			eval_t ev = -_Alphabeta(depth - 1 - _null_cut, -beta, -(beta - pvs_window), true);
 			undo_null_move();
 			if (ev >= beta)
 				return ev;
@@ -134,7 +135,7 @@ namespace amz
 				eval = -_Alphabeta(depth - 1, -beta, -alpha);
 			else
 			{
-				eval = -_Alphabeta(depth - 1, -(alpha + 1), -alpha);
+				eval = -_Alphabeta(depth - 1, -(alpha + pvs_window), -alpha);
 				if ((eval > alpha) && (eval < beta))
 					eval = -_Alphabeta(depth - 1, -beta, -alpha);
 			}
@@ -182,7 +183,7 @@ namespace amz
 				eval = -_Alphabeta(depth - 1, -inf, inf, true);
 			else
 			{
-				eval = -_Alphabeta(depth - 1, -(eval_max + 1), -eval_max);
+				eval = -_Alphabeta(depth - 1, -(eval_max + pvs_window), -eval_max);
 				if (eval > eval_max)
 					eval = -_Alphabeta(depth - 1, -inf, -eval_max, true);
 			}

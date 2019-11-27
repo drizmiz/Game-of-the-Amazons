@@ -238,7 +238,7 @@ namespace amz
 		{
 			starttime = std::chrono::steady_clock::now();
 
-			timespan = get_turn() <= 1 ? 400 : get_turn() <= 2 ? 550 : get_turn() <= 3 ? 650 : get_turn() <= 5 ? 700 : get_turn() <= 6 ? 750 : 800;
+			timespan = get_turn() <= 1 ? 650 : get_turn() <= 2 ? 700 : get_turn() <= 3 ? 800 : 850;
 
 			return _Search_till_timeout();
 		}

@@ -8,8 +8,7 @@
 
 namespace eval_adj	// evaluation adjusted
 {
-	//ÆÀ¹À¼ÓÈ¨Æ÷
-
+	// ÆÀ¹À¼ÓÈ¨Æ÷
 	constexpr double w_t1[28] = { 0.1080, 0.1080, 0.1235, 0.1332, 0.1400, 0.1468, 0.1565, 0.1720, 0.1949, 0.2217, 0.2476, 0.2680, 0.2800, 0.2884, 0.3000, 0.3208, 0.3535, 0.4000, 0.4613, 0.5350, 0.6181, 0.7075, 0.8000, 0.9000, 0.9000,0.9000, 0.9000, 0.9000 };
 	constexpr double w_t2[28] = { 0.3940, 0.3940, 0.3826, 0.3753, 0.3700, 0.3647, 0.3574, 0.3460, 0.3294, 0.3098, 0.2903, 0.2740, 0.2631, 0.2559, 0.2500, 0.2430, 0.2334, 0.2200, 0.2020, 0.1800, 0.1550, 0.1280, 0.1000, 0.0500, 0.0500, 0.0500, 0.0500, 0.0500 };
 	constexpr double w_c[28] = { 0.1160, 0.1160, 0.1224, 0.1267, 0.1300, 0.1333, 0.1376, 0.1440, 0.1531, 0.1640, 0.1754, 0.1860, 0.1944, 0.1995, 0.2000, 0.1950, 0.1849, 0.1700, 0.1510, 0.1287, 0.1038, 0.0773, 0.0500, 0.0250, 0.0250, 0.0500, 0.0500, 0.0500 };
@@ -34,23 +33,26 @@ namespace eval_adj	// evaluation adjusted
 			ifs.close();
 #endif
 		}
-		double f_w_t1(size_t w, double v) const {
+		double f_w_t1(size_t w, double v) const
+		{
 			return v * w_t1[w];
 		}
 
-		double f_w_t2(size_t w, double v) const {
+		double f_w_t2(size_t w, double v) const 
+		{
 			return v * w_t2[w];
 		}
-		double f_w_c(size_t w, double v) const {
-
+		double f_w_c(size_t w, double v) const 
+		{
 			return v * w_c[w];
 		}
-		double f_w_m(size_t w, double v) const {
+		double f_w_m(size_t w, double v) const 
+		{
 			return v * w_m[w];
 		}
 	};
 
-	//ÆÀ¹ÀÆ÷
+	// ÆÀ¹ÀÆ÷
 	class evaluator {
 		using distance_matrix = uint8_t[8][8];
 		using distance_matrix_group = array<distance_matrix, 4>;
@@ -77,7 +79,7 @@ namespace eval_adj	// evaluation adjusted
 			double d = _distribution_ingredient();
 			double g = _guard_ingredient();
 			r = t + m + d + g;
-			append_log("t m d g r: " + to_string(t) + " " + to_string(m) + " " + to_string(d) + " " + to_string(g) + " " + to_string(r), true);
+			// append_log("t m d g r: " + to_string(t) + " " + to_string(m) + " " + to_string(d) + " " + to_string(g) + " " + to_string(r), true);
 			return r;
 		}
 		void _output_board() {
@@ -179,7 +181,8 @@ namespace eval_adj	// evaluation adjusted
 			if (x - 1 >= 0 && y - 1 >= 0 && _bd(x - 1, y - 1).is_empty()) ++sum;
 			return sum;
 		}
-		void _single_queen_min_moves(tuple<int, int> from, distance_matrix& distance) {
+		void _single_queen_min_moves(tuple<int, int> from, distance_matrix& distance)
+		{
 			vector<tuple<int, int>> open;
 			bitset<64> closed;
 
@@ -268,7 +271,8 @@ namespace eval_adj	// evaluation adjusted
 			}
 			distance[fx][fy] = 255;
 		}
-		void _single_king_min_moves(tuple<int, int> from, distance_matrix& distance) {
+		void _single_king_min_moves(tuple<int, int> from, distance_matrix& distance)
+		{
 			vector<tuple<int, int>> open;
 			bitset<64> closed;
 
@@ -284,40 +288,56 @@ namespace eval_adj	// evaluation adjusted
 				uint8_t w = distance[x][y];
 
 				open.pop_back();
-				closed[get_i(x,y)] = 1;
+				closed[get_i(x, y)] = 1;
 
-				if (x + 1 < 8) if (_bd(x + 1, y).is_empty() && !closed[get_i( x + 1, y )]) {
-					open.emplace_back(x + 1, y);
-					distance[x + 1][y] = min(distance[x + 1][y], (uint8_t)(w + 1));
-				}
-				if (x - 1 >= 0) if (_bd(x - 1, y).is_empty() && !closed[get_i( x - 1, y )]) {
-					open.emplace_back(x - 1, y);
-					distance[x - 1][y] = min(distance[x - 1][y], (uint8_t)(w + 1));
-				}
-				if (y + 1 < 8) if (_bd(x, y + 1).is_empty() && !closed[get_i( x, y + 1 )]) {
-					open.emplace_back(x, y + 1);
-					distance[x][y + 1] = min(distance[x][y + 1], (uint8_t)(w + 1));
-				}
-				if (y - 1 >= 0) if (_bd(x, y - 1).is_empty() && !closed[get_i( x, y - 1 )]) {
-					open.emplace_back(x, y - 1);
-					distance[x][y - 1] = min(distance[x][y - 1], (uint8_t)(w + 1));
-				}
-				if (x + 1 < 8 && y + 1 < 8) if (_bd(x + 1, y + 1).is_empty() && !closed[get_i( x + 1, y + 1 )]) {
-					open.emplace_back(x + 1, y + 1);
-					distance[x + 1][y + 1] = min(distance[x + 1][y + 1], (uint8_t)(w + 1));
-				}
-				if (x - 1 >= 0 && y + 1 < 8) if (_bd(x - 1, y + 1).is_empty() && !closed[get_i( x - 1, y + 1 )]) {
-					open.emplace_back(x - 1, y + 1);
-					distance[x - 1][y + 1] = min(distance[x - 1][y + 1], (uint8_t)(w + 1));
-				}
-				if (x + 1 < 8 && y - 1 >= 0) if (_bd(x + 1, y - 1).is_empty() && !closed[get_i( x + 1, y - 1 )]) {
-					open.emplace_back(x + 1, y - 1);
-					distance[x + 1][y - 1] = min(distance[x + 1][y - 1], (uint8_t)(w + 1));
-				}
-				if (x - 1 >= 0 && y - 1 >= 0) if (_bd(x - 1, y - 1).is_empty() && !closed[get_i( x - 1, y - 1 )]) {
-					open.emplace_back(x - 1, y - 1);
-					distance[x - 1][y - 1] = min(distance[x - 1][y - 1], (uint8_t)(w + 1));
-				}
+				if (x + 1 < 8)
+					if (_bd(x + 1, y).is_empty() && !closed[get_i(x + 1, y)])
+					{
+						open.emplace_back(x + 1, y);
+						distance[x + 1][y] = min(distance[x + 1][y], (uint8_t)(w + 1));
+					}
+				if (x - 1 >= 0)
+					if (_bd(x - 1, y).is_empty() && !closed[get_i(x - 1, y)])
+					{
+						open.emplace_back(x - 1, y);
+						distance[x - 1][y] = min(distance[x - 1][y], (uint8_t)(w + 1));
+					}
+				if (y + 1 < 8)
+					if (_bd(x, y + 1).is_empty() && !closed[get_i(x, y + 1)])
+					{
+						open.emplace_back(x, y + 1);
+						distance[x][y + 1] = min(distance[x][y + 1], (uint8_t)(w + 1));
+					}
+				if (y - 1 >= 0)
+					if (_bd(x, y - 1).is_empty() && !closed[get_i(x, y - 1)])
+					{
+						open.emplace_back(x, y - 1);
+						distance[x][y - 1] = min(distance[x][y - 1], (uint8_t)(w + 1));
+					}
+				if (x + 1 < 8 && y + 1 < 8)
+					if (_bd(x + 1, y + 1).is_empty() && !closed[get_i(x + 1, y + 1)])
+					{
+						open.emplace_back(x + 1, y + 1);
+						distance[x + 1][y + 1] = min(distance[x + 1][y + 1], (uint8_t)(w + 1));
+					}
+				if (x - 1 >= 0 && y + 1 < 8)
+					if (_bd(x - 1, y + 1).is_empty() && !closed[get_i(x - 1, y + 1)])
+					{
+						open.emplace_back(x - 1, y + 1);
+						distance[x - 1][y + 1] = min(distance[x - 1][y + 1], (uint8_t)(w + 1));
+					}
+				if (x + 1 < 8 && y - 1 >= 0)
+					if (_bd(x + 1, y - 1).is_empty() && !closed[get_i(x + 1, y - 1)])
+					{
+						open.emplace_back(x + 1, y - 1);
+						distance[x + 1][y - 1] = min(distance[x + 1][y - 1], (uint8_t)(w + 1));
+					}
+				if (x - 1 >= 0 && y - 1 >= 0)
+					if (_bd(x - 1, y - 1).is_empty() && !closed[get_i(x - 1, y - 1)])
+					{
+						open.emplace_back(x - 1, y - 1);
+						distance[x - 1][y - 1] = min(distance[x - 1][y - 1], (uint8_t)(w + 1));
+					}
 			}
 
 			distance[fx][fy] = 255;
