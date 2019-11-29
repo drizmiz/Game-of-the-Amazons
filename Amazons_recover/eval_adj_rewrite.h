@@ -60,16 +60,16 @@ namespace eval_adj	// evaluation adjusted
 		friend int amz::_Debug_evaluate(const chess_status& cs, chess_color color, int turn_cnt, std::ostream& out);
 	public:
 		evaluator(const board& bd, const player& pl, int turn, const evaluation_weight_function& ewf) : _bd(bd), _pl(pl), _turn(turn), _ewf(ewf) {
-			for (auto& dmg : _dm_1)
-				for (auto& dm : dmg)
-					memset(dm, (uint8_t)(-1), 64);
-			for (auto& dmg : _dm_2)
-				for (auto& dm : dmg)
-					memset(dm, (uint8_t)(-1), 64);
-			memset(_merged_dm_1[0], (uint8_t)(-1), 64);
-			memset(_merged_dm_1[1], (uint8_t)(-1), 64);
-			memset(_merged_dm_2[0], (uint8_t)(-1), 64);
-			memset(_merged_dm_2[1], (uint8_t)(-1), 64);
+			//for (auto& dmg : _dm_queen)
+				//for (auto& dm : dmg)
+					//memset(dm, (uint8_t)(-1), 64);
+			//for (auto& dmg : _dm_king)
+				//for (auto& dm : dmg)
+					//memset(dm, (uint8_t)(-1), 64);
+			memset(_merged_dm_queen[0], (uint8_t)(-1), 64);
+			memset(_merged_dm_queen[1], (uint8_t)(-1), 64);
+			memset(_merged_dm_king[0], (uint8_t)(-1), 64);
+			memset(_merged_dm_king[1], (uint8_t)(-1), 64);
 		}
 		double evaluate() {
 			double r = 0;
@@ -88,28 +88,28 @@ namespace eval_adj	// evaluation adjusted
 			string str = "+----------DM1S----------+\n";
 			for (int i = 0; i < 8; ++i) {
 				for (int j = 0; j < 8; ++j)
-					str += to_string(_merged_dm_1[0][j][i]) + string(4 - to_string(_merged_dm_1[0][j][i]).size(), ' ');
+					str += to_string(_merged_dm_queen[0][j][i]) + string(4 - to_string(_merged_dm_queen[0][j][i]).size(), ' ');
 				str += "\n";
 			}
 			append_log(str);
 			str = "+----------DM1O----------+\n";
 			for (int i = 0; i < 8; ++i) {
 				for (int j = 0; j < 8; ++j)
-					str += to_string(_merged_dm_1[1][j][i]) + string(4 - to_string(_merged_dm_1[1][j][i]).size(), ' ');
+					str += to_string(_merged_dm_queen[1][j][i]) + string(4 - to_string(_merged_dm_queen[1][j][i]).size(), ' ');
 				str += "\n";
 			}
 			append_log(str);
 			str = "+----------DM2S----------+\n";
 			for (int i = 0; i < 8; ++i) {
 				for (int j = 0; j < 8; ++j)
-					str += to_string(_merged_dm_2[0][j][i]) + string(4 - to_string(_merged_dm_2[0][j][i]).size(), ' ');
+					str += to_string(_merged_dm_king[0][j][i]) + string(4 - to_string(_merged_dm_king[0][j][i]).size(), ' ');
 				str += "\n";
 			}
 			append_log(str);
 			str = "+----------DM2O----------+\n";
 			for (int i = 0; i < 8; ++i) {
 				for (int j = 0; j < 8; ++j)
-					str += to_string(_merged_dm_2[1][j][i]) + string(4 - to_string(_merged_dm_2[1][j][i]).size(), ' ');
+					str += to_string(_merged_dm_king[1][j][i]) + string(4 - to_string(_merged_dm_king[1][j][i]).size(), ' ');
 				str += "\n";
 			}
 			append_log(str);
@@ -118,22 +118,23 @@ namespace eval_adj	// evaluation adjusted
 	private:
 		void _generate_distance_matrix() {
 			int idx = 0;
-			for (auto& m : _pl.self())
-				_single_queen_min_moves(m, _dm_1[0][idx++]);
-			idx = 0;
-			for (auto& m : _pl.opponent())
-				_single_queen_min_moves(m, _dm_1[1][idx++]);
-			idx = 0;
-			for (auto& m : _pl.self())
-				_single_king_min_moves(m, _dm_2[0][idx++]);
-			idx = 0;
-			for (auto& m : _pl.opponent())
-				_single_king_min_moves(m, _dm_2[1][idx++]);
+			//for (auto& m : _pl.self())
+				//_single_queen_min_moves(m, _dm_queen[0][idx++]);
+			//idx = 0;
+			_queen_min_moves(_pl.self(), _merged_dm_queen[0]);
+			//for (auto& m : _pl.opponent())
+			_queen_min_moves(_pl.opponent(), _merged_dm_queen[1]);
+			//idx = 0;
+			//for (auto& m : _pl.self())
+			_king_min_moves(_pl.self(), _merged_dm_king[0]);
+			//idx = 0;
+			//for (auto& m : _pl.opponent())
+			_king_min_moves(_pl.opponent(), _merged_dm_king[1]);
 
-			_merge_distance_matrix(_merged_dm_1[0], _dm_1[0]);
-			_merge_distance_matrix(_merged_dm_1[1], _dm_1[1]);
-			_merge_distance_matrix(_merged_dm_2[0], _dm_2[0]);
-			_merge_distance_matrix(_merged_dm_2[1], _dm_2[1]);
+			//_merge_distance_matrix(_merged_dm_queen[0], _dm_queen[0]);
+			//_merge_distance_matrix(_merged_dm_queen[1], _dm_queen[1]);
+			//_merge_distance_matrix(_merged_dm_king[0], _dm_king[0]);
+			//_merge_distance_matrix(_merged_dm_king[1], _dm_king[1]);
 		}
 		double _territory_determine_delta(uint8_t m, uint8_t n) {
 			if (m == 255 && n == 255) return 0.0;
@@ -154,8 +155,8 @@ namespace eval_adj	// evaluation adjusted
 			for (int i = 0; i < 8; ++i)
 				for (int j = 0; j < 8; ++j) {
 					if (!_bd(i, j).is_empty()) continue;
-					t1 += _territory_determine_delta(_merged_dm_1[0][i][j], _merged_dm_1[1][i][j]);
-					c1 += pow(2.0, -_merged_dm_1[0][i][j]) - pow(2.0, -_merged_dm_1[1][i][j]);
+					t1 += _territory_determine_delta(_merged_dm_queen[0][i][j], _merged_dm_queen[1][i][j]);
+					c1 += pow(2.0, -_merged_dm_queen[0][i][j]) - pow(2.0, -_merged_dm_queen[1][i][j]);
 				}
 			c1 *= 2;
 			return { t1, c1 };
@@ -165,28 +166,74 @@ namespace eval_adj	// evaluation adjusted
 			for (int i = 0; i < 8; ++i)
 				for (int j = 0; j < 8; ++j) {
 					if (!_bd(i, j).is_empty()) continue;
-					t2 += _territory_determine_delta(_merged_dm_2[0][i][j], _merged_dm_2[1][i][j]);
-					c2 += min(1.0, max(-1.0, (double)(_merged_dm_2[1][i][j] - _merged_dm_2[0][i][j]) / 6.0));
+					t2 += _territory_determine_delta(_merged_dm_king[0][i][j], _merged_dm_king[1][i][j]);
+					c2 += min(1.0, max(-1.0, (double)(_merged_dm_king[1][i][j] - _merged_dm_king[0][i][j]) / 6.0));
 				}
 			return { t2,c2 };
 		}
-		size_t _empty_neighbor_num(uint8_t x, uint8_t y) {
-			size_t sum = 0;
-			if (x + 1 < 8 && _bd(x + 1, y).is_empty()) ++sum;
-			if (x - 1 >= 0 && _bd(x - 1, y).is_empty()) ++sum;
-			if (y + 1 < 8 && _bd(x, y + 1).is_empty()) ++sum;
-			if (y - 1 >= 0 && _bd(x, y - 1).is_empty()) ++sum;
-			if (x + 1 < 8 && y + 1 < 8 && _bd(x + 1, y + 1).is_empty()) ++sum;
-			if (x - 1 >= 0 && y + 1 < 8 && _bd(x - 1, y + 1).is_empty()) ++sum;
-			if (x + 1 < 8 && y - 1 >= 0 && _bd(x + 1, y - 1).is_empty()) ++sum;
-			if (x - 1 >= 0 && y - 1 >= 0 && _bd(x - 1, y - 1).is_empty()) ++sum;
+
+		void _generate_empty(distance_matrix& _empty_num)
+		{
+			for (int i = 0; i < 8; i++)
+				for (int j = 0; j < 8; j++)
+					if (_bd.is_empty(get_i(i, j)))
+						_empty_num[i][j] = _empty_neighbor_num(i, j);
+		}
+		uint8_t _empty_neighbor_num(len_t x, len_t y) {
+			uint8_t sum = 0;
+			/*
+			sum = ((x + 1 < 8 && _bd.is_empty(x + 1, y)) ? sum + 1 : sum);
+			sum = ((x - 1 >= 0 && _bd.is_empty(x - 1, y)) ? sum + 1 : sum);
+			sum = ((y + 1 < 8 && _bd.is_empty(x, y + 1)) ? sum + 1 : sum);
+			sum = ((y - 1 >= 0 && _bd.is_empty(x, y - 1)) ? sum + 1 : sum);
+			sum = ((x + 1 < 8 && y + 1 < 8 && _bd.is_empty(x + 1, y + 1)) ? sum + 1 : sum);
+			sum = ((x - 1 >= 0 && y + 1 < 8 && _bd.is_empty(x - 1, y + 1)) ? sum + 1 : sum);
+			sum = ((x + 1 < 8 && y - 1 >= 0 && _bd.is_empty(x + 1, y - 1)) ? sum + 1 : sum);
+			sum = ((x - 1 >= 0 && y - 1 >= 0 && _bd.is_empty(x - 1, y - 1)) ? sum + 1 : sum);
+			*/
+			for (int m = 0; m < 8; m++)
+				sum = ((in_map(x + dx[m], y + dy[m]) && _bd.is_empty(x + dx[m], y + dy[m])) ? sum + 1 : sum);
 			return sum;
 		}
 		int dx[8] = { -1,-1,-1,0,0,1,1,1 };
 		int dy[8] = { -1,0,1,-1,1,-1,0,1 };
-		int dxy[8] = { -9,-8,-7,-1,1,7,8,9 };
-		void _single_queen_min_moves(pair<int, int> from, distance_matrix& distance)
+		void _queen_min_moves(array<pair<len_t, len_t>, 4> froms, distance_matrix& distance)
 		{
+			resizing_queue<pair<len_t, len_t>> que(64);
+
+			for (int i = 0; i < 8; i++)
+				for (int j = 0; j < 8; j++)
+					distance[i][j] = 255;
+
+			for (int i = 0; i < 4; i++)
+			{
+				pair<len_t, len_t>& from = froms[i];
+				auto [x, y] = from;
+				que.push(from);
+				distance[x][y] = 0;
+				while (!que.empty())
+				{
+					pair<len_t, len_t> p = que.pop();
+
+					for (int j = 0; j < 8; j++)
+					{
+						for (int step = 1; step < 8; step++)
+						{
+							int nx = p.first + dx[j] * step, ny = p.second + dy[j] * step;
+							if (in_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && distance[nx][ny] > distance[p.first][p.second] + 1)
+							{
+								que.push(make_pair(nx, ny));
+								distance[nx][ny] = distance[p.first][p.second] + 1;
+							}
+							else break;
+						}
+					}
+				}
+			}
+		}
+		void _single_queen_min_moves(pair<len_t, len_t> from, distance_matrix& distance)
+		{
+			/*
 			vector<pair<int, int>> open;
 			bitset<64> closed;
 
@@ -217,6 +264,61 @@ namespace eval_adj	// evaluation adjusted
 				}
 			}
 			distance[fx][fy] = 255;
+			*/
+			resizing_queue<pair<len_t, len_t>> que(64);
+
+			auto [x, y] = from;
+			que.push(from);
+			distance[x][y] = 0;
+			for (; !que.empty();)
+			{
+				pair<len_t, len_t> p = que.pop();
+
+				for (int j = 0; j < 8; j++)
+				{
+					for (int step = 1; step < 8; step++)
+					{
+						int nx = p.first + dx[j] * step, ny = p.second + dy[j] * step;
+						if (in_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && distance[nx][ny] > distance[p.first][p.second] + 1)
+						{
+							que.push(make_pair(nx, ny));
+							distance[nx][ny] = distance[p.first][p.second] + 1;
+						}
+						else break;
+					}
+				}
+			}
+			distance[x][y] = 255;
+		}
+		void _king_min_moves(array<pair<len_t, len_t>, 4> froms, distance_matrix& distance)
+		{
+			resizing_queue<pair<len_t, len_t>> que(64);
+
+			for (int i = 0; i < 8; i++)
+				for (int j = 0; j < 8; j++)
+					distance[i][j] = 255;
+
+			for (int i = 0; i < 4; i++)
+			{
+				pair<len_t, len_t>& from = froms[i];
+				auto [x, y] = from;
+				que.push(from);
+				distance[x][y] = 0;
+				while (!que.empty())
+				{
+					pair<len_t, len_t> p = que.pop();
+
+					for (int j = 0; j < 8; j++)
+					{
+						len_t nx = p.first + dx[j], ny = p.second + dy[j];
+						if (in_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && distance[nx][ny] > distance[p.first][p.second] + 1)
+						{
+							que.push(make_pair(nx, ny));
+							distance[nx][ny] = distance[p.first][p.second] + 1;
+						}
+					}
+				}
+			}
 		}
 		void _single_king_min_moves(pair<len_t, len_t> from, distance_matrix& distance)
 		{
@@ -290,7 +392,7 @@ namespace eval_adj	// evaluation adjusted
 
 			distance[fx][fy] = 255;
 			*/
-			RAQueue<pair<len_t, len_t>> que(64);
+			resizing_queue<pair<len_t, len_t>> que(64);
 
 			auto [x, y] = from;
 			que.push(from);
@@ -301,7 +403,7 @@ namespace eval_adj	// evaluation adjusted
 				for (int j = 0; j < 8; j++)
 				{
 					len_t nx = p.first + dx[j], ny = p.second + dy[j];
-					if (inMap(nx, ny) && _bd.is_empty(get_i(nx, ny)) && distance[nx][ny] > distance[p.first][p.second] + 1)
+					if (in_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && distance[nx][ny] > distance[p.first][p.second] + 1)
 					{
 						que.push(make_pair(nx, ny));
 						distance[nx][ny] = distance[p.first][p.second] + 1;
@@ -310,14 +412,32 @@ namespace eval_adj	// evaluation adjusted
 			}
 			distance[x][y] = 255;
 		}
-		bool inMap(int i, int j) { return !(((i << 4) + j) & 0x88); }
+		bool in_map(len_t i, len_t j) { return !(((i << 4) + j) & 0x88); }
 	
-		double _amazon_mobility(size_t player_idx, size_t amazon_idx) {
+		double mother[9] = { 0.0,1.0,0.5,0.33,0.25,0.2,0.167,0.143,0.125 };
+
+		double _amazons_mobility(size_t player_idx) {
 			double a = 0.0;
-			for (int i = 0; i < 8; ++i)
-				for (int j = 0; j < 8; ++j)
-					if (_merged_dm_1[1 - player_idx][i][j] != 255 && _dm_1[player_idx][amazon_idx][i][j] <= 1)
-						a += pow(2.0, -_dm_2[player_idx][amazon_idx][i][j] + 1) * _empty_neighbor_num(i, j);
+			//for (int i = 0; i < 8; ++i)
+				//for (int j = 0; j < 8; ++j)
+					//if (_merged_dm_queen[1 - player_idx][i][j] != 255 && _dm_queen[player_idx][amazon_idx][i][j] <= 1)
+						//a += pow(2.0, -_dm_king[player_idx][amazon_idx][i][j] + 1) * _empty_neighbor_num(i, j);
+			const array<pair<len_t, len_t>, 4>& amazons = player_idx == 0 ? _pl.self() : _pl.opponent();
+			distance_matrix empty;
+			_generate_empty(empty);
+
+			for (auto amazon : amazons) {
+				for (int i = 0; i < 8; i++) {
+					for (int step = 1; step < 8; step++)
+					{
+						int nx = amazon.first + dx[i] * step, ny = amazon.second + dy[i] * step;
+						if (in_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && _merged_dm_queen[player_idx][nx][ny] != 255)
+							a += empty[nx][ny] * mother[step];
+						else
+							break;
+					}
+				}
+			}
 			return a;
 		}
 		double _territory_ingredient() {
@@ -348,33 +468,114 @@ namespace eval_adj	// evaluation adjusted
 			return (1 - _turn / 28) * (d1 - d2) * 0.6;
 		}
 		double _mobility_ingredient() {
-			double m1 = 0, m2 = 0;
-			for (int i = 0; i < 4; ++i)
-				m1 += _amazon_mobility(0, (size_t)i);
-			for (int i = 0; i < 4; ++i)
-				m2 += _amazon_mobility(1, (size_t)i);
+			double m1 = _amazons_mobility(0);
+			double m2 = _amazons_mobility(1);
 			return _ewf.f_w_m(_turn, m1 - m2);
 		}
+
+		using boolmtx = bool[8][8];
+		boolmtx _can_access[2][4];
+
+		vector<pair<len_t, len_t>> _adjacents(pair<len_t, len_t> from)
+		{
+			vector<pair<len_t, len_t>> ret;
+			ret.reserve(8);
+			/*
+			if (from.first != 0 && _bd.is_empty(from.first - 1, from.second))
+				ret.push_back({ from.first - 1,from.second });
+			if (from.first != 7 && _bd.is_empty(from.first + 1, from.second))
+				ret.push_back({ from.first + 1,from.second });
+			if (from.second != 0 && _bd.is_empty(from.first, from.second - 1))
+				ret.push_back({ from.first ,from.second - 1 });
+			if (from.second != 7 && _bd.is_empty(from.first, from.second + 1))
+				ret.push_back({ from.first ,from.second + 1 });
+				*/
+			for (int m = 0; m < 8; ++m)
+				if (in_map(from.first + dx[m], from.second + dy[m]) && _bd.is_empty(from.first + dx[m], from.second + dy[m]))
+					ret.push_back({ from.first + dx[m], from.second + dy[m] });
+			return ret;
+		}
+		void _generate_access_mtx(pair<len_t, len_t> from, boolmtx& distance)
+		{
+			pair<len_t, len_t> v;
+			vector<pair<len_t, len_t>> stack;
+			stack.reserve(64);
+
+			stack.push_back(from);
+			for (; stack.size();)
+			{
+				v = stack.back();
+				distance[v.first][v.second] = true;
+				stack.pop_back();
+
+				const vector<pair<len_t, len_t>>& adjs = _adjacents(v);
+				for (const pair<len_t, len_t>& u : adjs)
+					if (!distance[u.first][u.second])
+						stack.push_back(u);
+			}
+			/*
+			resizing_queue<pair<len_t, len_t>> que(64);
+
+			auto [x, y] = from;
+			que.push(from);
+			distance[x][y] = true;
+			while (!que.empty())
+			{
+				pair<len_t, len_t> p = que.pop();
+				for (int j = 0; j < 8; j++)
+				{
+					len_t nx = p.first + dx[j], ny = p.second + dy[j];
+					if (in_map(nx, ny) && _bd.is_empty(get_i(nx, ny)))
+					{
+						que.push(make_pair(nx, ny));
+						distance[nx][ny] = distance[p.first][p.second] + 1;
+					}
+				}
+			}
+			distance[x][y] = false;
+			*/
+		}
+		void _generate_access()
+		{
+			int idx = 0;
+			for (auto& amazon : _pl.self())
+				_generate_access_mtx(amazon, _can_access[0][idx++]);
+			idx = 0;
+			for (auto& amazon : _pl.opponent())
+				_generate_access_mtx(amazon, _can_access[1][idx++]);
+		}
+
 		double _guard_ingredient() {
-			auto _flat_dm_1 = [this](size_t idx) {return _dm_1[idx / 4][idx % 4]; };
-			auto _self_dm_1 = [this](size_t idx) {return _dm_1[0][idx]; };
-			auto _opponent_dm_1 = [this](size_t idx) {return _dm_1[1][idx]; };
+			_generate_access();
+
+			auto _flat_access_mtx = [this](size_t idx) {return _can_access[idx / 4][idx % 4]; };
+			// auto _self_dm_queen = [this](size_t idx) {return _can_access[0][idx]; };
+			// auto _opponent_dm_queen = [this](size_t idx) {return _can_access[1][idx]; };
+			auto _move_once = [this](pair<len_t, len_t> from, pair<len_t, len_t>to) {
+				for (int m = 0; m < 8; ++m)
+					if (to.first == from.first + dx[m] && to.second == from.second + dy[m])
+						return true;
+				return false;
+			};
 
 			array<array<size_t, 4>, 2> exclusive_access_num = { 0 };
 			array<array<size_t, 4>, 2> common_access_num = { 0 };
+
+			auto self = _pl.self();
+			auto opponent = _pl.opponent();
 
 			for (int i = 0; i < 8; ++i)
 				for (int j = 0; j < 8; ++j)
 				{
 					constexpr int upper_bound = 8;
 					for (int i0 = 0; i0 < upper_bound; ++i0)
-						if (_flat_dm_1(i0)[i][j] != 255) 
+						if (_flat_access_mtx(i0)[i][j])
 						{
 							for (int j0 = 0; j0 < upper_bound; ++j0)
 								if (i0 == j0)
 									continue;
 								else
-									if (_flat_dm_1(j0)[i][j] != 255)
+									if (_flat_access_mtx(j0)[i][j])
 										goto end1;
 							++exclusive_access_num[i0 / 4][i0 % 4];
 							goto end1;
@@ -387,15 +588,15 @@ namespace eval_adj	// evaluation adjusted
 				{
 					constexpr int upper_bound = 4;
 					for (int i0 = 0; i0 < upper_bound; ++i0)
-						if (_self_dm_1(i0)[i][j])
+						if (_move_once(self[i0], { i,j }))
 						{
 							for (int j0 = 0; j0 < upper_bound; ++j0)
 								if (i0 == j0)
 									continue;
 								else
-									if (_self_dm_1(j0)[i][j])
+									if (_move_once(self[j0], { i,j }))
 										goto end2;
-							if (_merged_dm_1[1][i][j] == 1)  
+							if (_merged_dm_queen[1][i][j] == 1)
 								++common_access_num[0][i0];
 							goto end2;
 						}
@@ -407,15 +608,15 @@ namespace eval_adj	// evaluation adjusted
 				{
 					constexpr int upper_bound = 4;
 					for (int i0 = 0; i0 < upper_bound; ++i0)
-						if (_opponent_dm_1(i0)[i][j])
+						if (_move_once(opponent[i0], { i,j }))
 						{
 							for (int j0 = 0; j0 < upper_bound; ++j0)
 								if (i0 == j0)
 									continue;
 								else
-									if (_opponent_dm_1(j0)[i][j])
+									if (_move_once(opponent[j0], { i,j }))
 										goto end3;
-							if (_merged_dm_1[0][i][j] == 1) 
+							if (_merged_dm_queen[0][i][j] == 1)
 								++common_access_num[1][i0];
 							goto end3;
 						}
@@ -436,10 +637,10 @@ namespace eval_adj	// evaluation adjusted
 		const player& _pl;
 		size_t _turn;
 		const evaluation_weight_function& _ewf;
-		distance_matrix_group _dm_1[2];
-		distance_matrix_group _dm_2[2];
-		distance_matrix _merged_dm_1[2];
-		distance_matrix _merged_dm_2[2];
+		// distance_matrix_group _dm_queen[2];
+		// distance_matrix_group _dm_king[2];
+		distance_matrix _merged_dm_queen[2];
+		distance_matrix _merged_dm_king[2];
 	};
 
 }

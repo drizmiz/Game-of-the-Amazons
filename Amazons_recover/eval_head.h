@@ -65,6 +65,9 @@ namespace eval_adj	// evaluation adjusted
 		const bool is_empty(off_i_t i)const {
 			return!(_cs.get_all() & mask(i));
 		}
+		const bool is_empty(len_t x, len_t y)const {
+			return!(_cs.get_all() & mask(x, y));
+		}
 		amz::bit_table get_table()const
 		{
 			return _cs.get_all();

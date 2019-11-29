@@ -7,9 +7,9 @@ BQS_H
 #ifndef BQS_H
 #define BQS_H
 
-#include <memory>
-#include <vector>
+#include "std.h"
 
+#ifndef __GNUC__
 template <typename T>
 class Stack
 {
@@ -534,8 +534,64 @@ public:
 	}
 };
 
+template<typename _Ty>
+class Sort;
+
+template <typename T, class Container = std::vector<T> >
+class my_priority_queue					// 最大值在树顶
+{
+	typedef unsigned uint;
+private:
+	Container& pq;						// ！不使用pq[0]
+	void swim(uint index)
+	{
+		for (; index > 1 && pq[index / 2] < pq[index]; index /= 2)
+			std::swap(pq[index / 2], pq[index]);
+	}
+	void sink(uint index, uint N = pq.size())
+	{
+		for (; 2 * index <= N;)
+		{
+			uint kid_index = 2 * index;
+			if (kid_index < N && pq[kid_index] < pq[kid_index + 1])
+				++kid_index;
+			if (pq[index] >= pq[kid_index])
+				break;
+			std::swap(pq[index], pq[kid_index]);
+			index = kid_index;
+		}
+	}
+public:
+	friend class Sort<T>;
+	my_priority_queue(Container& inpq) :pq(inpq) {}
+	my_priority_queue(uint N) :pq(Container()) { pq.reserve(N); }
+	void push(T in)
+	{
+		pq.push_back(in);
+		swim(pq.size());
+	}
+	void emplace(uint index, T in)
+	{
+		pq[index] = in;
+		// do sth
+	}
+	void insert(uint index, T in)
+	{
+		// do sth
+	}
+	T pop()
+	{
+		std::swap(pq[1], pq[pq.size()]);
+		T ret = pq.pop_back();
+		sink(1);
+		return ret;
+	}
+};
+
+#endif
+
 template <typename T>
-class RAQueue
+class resizing_queue
 {
 private:
 	static const int initialN = static_cast<int>(1e+3);
@@ -545,7 +601,7 @@ private:
 	// endptr指向最后一个元素之后的位置
 	int N, allspace;
 public:
-	RAQueue(int initial = initialN)
+	resizing_queue(int initial = initialN)
 	{
 		initialptr = space.allocate(initial);
 		allspace = initial; N = 0;
@@ -596,8 +652,8 @@ public:
 	}
 	T pop_back()
 	{
-		if (isEmpty())
-			throw std::exception("RADeque empty!");
+		//if (isEmpty())
+			//throw std::exception("RADeque empty!");
 		/*
 		if (N < allspace / expandrate / expandrate)
 			resize(allspace / expandrate);
@@ -609,8 +665,8 @@ public:
 	}
 	T pop_front()
 	{
-		if (isEmpty())
-			throw std::exception("RADeque empty!");
+		//if (isEmpty())
+			//throw std::exception("RADeque empty!");
 		T tmp = *beginptr;
 		space.destroy(beginptr++);
 		N--;
@@ -625,60 +681,6 @@ public:
 	T pop() { return pop_front(); }
 
 	bool empty() { return isEmpty(); }
-};
-
-template<typename _Ty>
-class Sort;
-
-template <typename T,class Container = std::vector<T> >
-class my_priority_queue					// 最大值在树顶
-{
-	typedef unsigned uint;
-private:
-	Container& pq;						// ！不使用pq[0]
-	void swim(uint index)
-	{
-		for (; index > 1 && pq[index / 2] < pq[index]; index /= 2)
-			std::swap(pq[index / 2], pq[index]);
-	}
-	void sink(uint index, uint N = pq.size())
-	{
-		for (; 2 * index <= N;)
-		{
-			uint kid_index = 2 * index;
-			if (kid_index < N && pq[kid_index] < pq[kid_index + 1])
-				++kid_index;
-			if (pq[index] >= pq[kid_index])
-				break;
-			std::swap(pq[index], pq[kid_index]);
-			index = kid_index;
-		}
-	}
-public:
-	friend class Sort<T>;
-	my_priority_queue(Container& inpq) :pq(inpq) {}
-	my_priority_queue(uint N) :pq(Container()) { pq.reserve(N); }
-	void push(T in)
-	{
-		pq.push_back(in);
-		swim(pq.size());
-	}
-	void emplace(uint index, T in)
-	{
-		pq[index] = in;
-		// do sth
-	}
-	void insert(uint index, T in)
-	{
-		// do sth
-	}
-	T pop()
-	{
-		std::swap(pq[1], pq[pq.size()]);
-		T ret = pq.pop_back();
-		sink(1);
-		return ret;
-	}
 };
 
 #endif

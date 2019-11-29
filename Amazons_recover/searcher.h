@@ -98,8 +98,8 @@ namespace amz
 	constexpr int limit_depth = 56;
 	eval_t chess_game::_Alphabeta(int depth, eval_t alpha, eval_t beta, bool _no_null = false)
 	{
-		//pvs_window = 12500 / pow(1.6, turn_cnt);
-		//if (pvs_window <= 100)pvs_window = 100;
+		pvs_window = 12500 / pow(1.6, turn_cnt);
+		if (pvs_window <= 100)pvs_window = 100;
 
 		using namespace std::chrono;
 		// ÖÃ»»±í²éÑ¯

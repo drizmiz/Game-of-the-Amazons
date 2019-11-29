@@ -346,3 +346,4 @@ healthchecksdb
 /Amazons_recover/weight.txt
 *.diagsession
 *.exe
+/Amazons_recover/Amazons_recover (2).cpp
