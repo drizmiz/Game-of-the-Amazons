@@ -38,16 +38,13 @@
     <ClInclude Include="searcher.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="refactored_adj_eval.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="eval_adj_rewrite.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="eval_head.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="BagQueueAndStack.h">
+    <ClInclude Include="container.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="eval_main.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

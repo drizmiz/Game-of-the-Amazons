@@ -1,11 +1,5 @@
-/*
-BQS_H
-*/
 
 #pragma once
-
-#ifndef BQS_H
-#define BQS_H
 
 #include "std.h"
 
@@ -682,5 +676,3 @@ public:
 
 	bool empty() { return isEmpty(); }
 };
-
-#endif

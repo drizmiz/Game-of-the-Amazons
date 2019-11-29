@@ -3,7 +3,7 @@
 
 #include "std.h"
 #include "eval_head.h"
-#include "BagQueueAndStack.h"
+#include "container.h"
 
 // #define THROW_EXCEPTION
 
@@ -78,7 +78,7 @@ namespace eval_adj	// evaluation adjusted
 			double t = _territory_ingredient();
 			double m = _mobility_ingredient();
 			double d = _distribution_ingredient();
-			double g = _guard_ingredient();
+			double g = 0;// _guard_ingredient(); 代价太高了，没办法
 			r = t + m + d + g;
 			// append_log("t m d g r: " + to_string(t) + " " + to_string(m) + " " + to_string(d) + " " + to_string(g) + " " + to_string(r), true);
 			return r;
@@ -150,13 +150,30 @@ namespace eval_adj	// evaluation adjusted
 					out[i][j] = min(min1, min2);
 				}
 		}
+		unsigned quick_pow(unsigned x, unsigned n)
+		{
+			int res = x;
+			int ans = 1;
+			while (n)
+			{
+				if (n & 1)
+					ans *= res;
+				res *= res;
+				n >>= 1;
+			}
+			return ans;
+		}
+		double quick_pow_s(int x, int n) {
+			if (n <= -31)return 0.0;
+			return 1.0 / quick_pow(x, -n);
+		}
 		pair<double, double> _t1_c1() {
 			double t1 = 0, c1 = 0;
 			for (int i = 0; i < 8; ++i)
 				for (int j = 0; j < 8; ++j) {
 					if (!_bd(i, j).is_empty()) continue;
 					t1 += _territory_determine_delta(_merged_dm_queen[0][i][j], _merged_dm_queen[1][i][j]);
-					c1 += pow(2.0, -_merged_dm_queen[0][i][j]) - pow(2.0, -_merged_dm_queen[1][i][j]);
+					c1 += quick_pow_s(2, -_merged_dm_queen[0][i][j]) - quick_pow_s(2, -_merged_dm_queen[1][i][j]);
 				}
 			c1 *= 2;
 			return { t1, c1 };
@@ -449,19 +466,20 @@ namespace eval_adj	// evaluation adjusted
 				_ewf.f_w_c(_turn, c1) +
 				_ewf.f_w_c(_turn, c2);
 		}
+		inline int _pow2(int x) { return x * x; }
 		double _distribution_ingredient() {
 			double d1 = 0, d2 = 0;
 			for (const auto& amazon1 : _pl.self())
 				for (const auto& amazon2 : _pl.self()) {
 					auto [x1, y1] = amazon1;
 					auto [x2, y2] = amazon2;
-					d1 += sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+					d1 += sqrt(_pow2(x1 - x2) + _pow2(y1 - y2));
 				}
 			for (const auto& amazon1 : _pl.opponent())
 				for (const auto& amazon2 : _pl.opponent()) {
 					auto [x1, y1] = amazon1;
 					auto [x2, y2] = amazon2;
-					d2 += sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+					d2 += sqrt(_pow2(x1 - x2) + _pow2(y1 - y2));
 				}
 			d1 = sqrt(d1 / 10.0);
 			d2 = sqrt(d2 / 10.0);
@@ -474,7 +492,7 @@ namespace eval_adj	// evaluation adjusted
 		}
 
 		using boolmtx = bool[8][8];
-		boolmtx _can_access[2][4];
+		boolmtx _can_access[2][4] = {};
 
 		vector<pair<len_t, len_t>> _adjacents(pair<len_t, len_t> from)
 		{
@@ -495,8 +513,12 @@ namespace eval_adj	// evaluation adjusted
 					ret.push_back({ from.first + dx[m], from.second + dy[m] });
 			return ret;
 		}
-		void _generate_access_mtx(pair<len_t, len_t> from, boolmtx& distance)
+		void _generate_access_mtx(const pair<len_t, len_t> from, boolmtx& distance)
 		{
+			for (int i = 0; i < 8; ++i)
+				for (int j = 0; j < 8; ++j)
+					distance[i][j] = false;
+
 			pair<len_t, len_t> v;
 			vector<pair<len_t, len_t>> stack;
 			stack.reserve(64);
@@ -508,11 +530,17 @@ namespace eval_adj	// evaluation adjusted
 				distance[v.first][v.second] = true;
 				stack.pop_back();
 
-				const vector<pair<len_t, len_t>>& adjs = _adjacents(v);
-				for (const pair<len_t, len_t>& u : adjs)
-					if (!distance[u.first][u.second])
-						stack.push_back(u);
+				for (int m = 0; m < 8; ++m)
+				{
+					auto x = v.first + dx[m];
+					auto y = v.second + dy[m];
+					if (in_map(x, y) && _bd.is_empty(x, y))
+						if (!distance[x][y])
+							stack.push_back({ x,y });
+				}
 			}
+
+			distance[from.first][from.second] = false;
 			/*
 			resizing_queue<pair<len_t, len_t>> que(64);
 
@@ -558,8 +586,8 @@ namespace eval_adj	// evaluation adjusted
 				return false;
 			};
 
-			array<array<size_t, 4>, 2> exclusive_access_num = { 0 };
-			array<array<size_t, 4>, 2> common_access_num = { 0 };
+			array<array<size_t, 4>, 2> exclusive_access_num = { };
+			array<array<size_t, 4>, 2> common_access_num = { };
 
 			auto self = _pl.self();
 			auto opponent = _pl.opponent();

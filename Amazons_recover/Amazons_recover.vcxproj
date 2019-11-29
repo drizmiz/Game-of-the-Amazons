@@ -160,13 +160,12 @@
     <ClCompile Include="Amazons_recover.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BagQueueAndStack.h" />
+    <ClInclude Include="container.h" />
     <ClInclude Include="csbd.h" />
     <ClInclude Include="eval.h" />
-    <ClInclude Include="eval_adj_rewrite.h" />
+    <ClInclude Include="eval_main.h" />
     <ClInclude Include="eval_head.h" />
     <ClInclude Include="game.h" />
-    <ClInclude Include="refactored_adj_eval.h" />
     <ClInclude Include="searcher.h" />
     <ClInclude Include="sio.h" />
     <ClInclude Include="std.h" />

@@ -30,7 +30,7 @@ int main()
 		cout << (cg.get_color() == chess_color::black ? "black move: " : "white move: ") << endl;
 		sio::output(cout, mm);
 		cout << "DEBUG Info: ";
-		_Debug_evaluate_bz(cg.get_status(), _Color_rev(cg.get_color()), cg.get_turn());
+		_Debug_evaluate(cg.get_status(), _Color_rev(cg.get_color()), cg.get_turn());
 		cout << endl;
 	}
 	return 0;
