@@ -20,13 +20,13 @@ namespace amz
 			return (_from == mm2._from && _to == mm2._to && _obs == mm2._obs);
 		}
 
-		const std::tuple<len_t, len_t> from() const {
+		const std::pair<len_t, len_t> from() const {
 			return get_ij(_from);
 		}
-		const std::tuple<len_t, len_t> to() const {
+		const std::pair<len_t, len_t> to() const {
 			return get_ij(_to);
 		}
-		const std::tuple<len_t, len_t> arrow() const {
+		const std::pair<len_t, len_t> arrow() const {
 			return get_ij(_obs);
 		}
 

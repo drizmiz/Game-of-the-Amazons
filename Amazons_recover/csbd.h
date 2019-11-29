@@ -100,11 +100,11 @@ namespace amz // chess board
 
 	constexpr off_i_t get_i(len_t row, len_t col)
 	{
-		return row * 8 + col;
+		return (row << 3) + col;
 	}
 	constexpr std::pair<len_t, len_t> get_ij(off_i_t i)
 	{
-		return std::make_pair(i / 8, i % 8);
+		return std::make_pair(i >> 3, i & 0x7);
 	}
 
 	bit_table _mask[64];
@@ -531,9 +531,9 @@ namespace amz // chess board
 		}
 		return ret;
 	}
-	std::array<std::tuple<len_t, len_t>, 4> _Transform_4_to_ij(bit_table moves)
+	std::array<std::pair<len_t, len_t>, 4> _Transform_4_to_ij(bit_table moves)
 	{
-		std::array<std::tuple<len_t, len_t>, 4> ret;
+		std::array<std::pair<len_t, len_t>, 4> ret;
 		byte i = 0;
 		for (;;)
 		{

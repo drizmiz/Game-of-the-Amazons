@@ -345,3 +345,4 @@ healthchecksdb
 /Amazons_recover/refactored_adj_eval.h
 /Amazons_recover/weight.txt
 *.diagsession
+*.exe

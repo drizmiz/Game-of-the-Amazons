@@ -160,6 +160,7 @@
     <ClCompile Include="Amazons_recover.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BagQueueAndStack.h" />
     <ClInclude Include="csbd.h" />
     <ClInclude Include="eval.h" />
     <ClInclude Include="eval_adj_rewrite.h" />

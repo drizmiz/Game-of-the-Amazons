@@ -3,6 +3,7 @@
 
 #include "std.h"
 #include "eval_head.h"
+#include "BagQueueAndStack.h"
 
 // #define THROW_EXCEPTION
 
@@ -56,7 +57,7 @@ namespace eval_adj	// evaluation adjusted
 	class evaluator {
 		using distance_matrix = uint8_t[8][8];
 		using distance_matrix_group = array<distance_matrix, 4>;
-		friend int amz::_Debug_evaluate(const chess_status& cs, chess_color color,int turn_cnt, std::ostream& out);
+		friend int amz::_Debug_evaluate(const chess_status& cs, chess_color color, int turn_cnt, std::ostream& out);
 	public:
 		evaluator(const board& bd, const player& pl, int turn, const evaluation_weight_function& ewf) : _bd(bd), _pl(pl), _turn(turn), _ewf(ewf) {
 			for (auto& dmg : _dm_1)
@@ -135,10 +136,10 @@ namespace eval_adj	// evaluation adjusted
 			_merge_distance_matrix(_merged_dm_2[1], _dm_2[1]);
 		}
 		double _territory_determine_delta(uint8_t m, uint8_t n) {
-			if (m == 255 && n == 255) return 0;
+			if (m == 255 && n == 255) return 0.0;
 			if (m == n) return 0.125;
-			if (m < n) return 1;
-			return -1;
+			if (m < n) return 1.0;
+			return -1.0;
 		}
 		void _merge_distance_matrix(distance_matrix& out, const distance_matrix_group& in) {
 			for (int i = 0; i < 8; ++i)
@@ -148,7 +149,7 @@ namespace eval_adj	// evaluation adjusted
 					out[i][j] = min(min1, min2);
 				}
 		}
-		tuple<double, double> _t1_c1() {
+		pair<double, double> _t1_c1() {
 			double t1 = 0, c1 = 0;
 			for (int i = 0; i < 8; ++i)
 				for (int j = 0; j < 8; ++j) {
@@ -159,7 +160,7 @@ namespace eval_adj	// evaluation adjusted
 			c1 *= 2;
 			return { t1, c1 };
 		}
-		tuple<double, double>  _t2_c2() {
+		pair<double, double>  _t2_c2() {
 			double t2 = 0, c2 = 0;
 			for (int i = 0; i < 8; ++i)
 				for (int j = 0; j < 8; ++j) {
@@ -181,9 +182,12 @@ namespace eval_adj	// evaluation adjusted
 			if (x - 1 >= 0 && y - 1 >= 0 && _bd(x - 1, y - 1).is_empty()) ++sum;
 			return sum;
 		}
-		void _single_queen_min_moves(tuple<int, int> from, distance_matrix& distance)
+		int dx[8] = { -1,-1,-1,0,0,1,1,1 };
+		int dy[8] = { -1,0,1,-1,1,-1,0,1 };
+		int dxy[8] = { -9,-8,-7,-1,1,7,8,9 };
+		void _single_queen_min_moves(pair<int, int> from, distance_matrix& distance)
 		{
-			vector<tuple<int, int>> open;
+			vector<pair<int, int>> open;
 			bitset<64> closed;
 
 			open.reserve(32);
@@ -199,70 +203,13 @@ namespace eval_adj	// evaluation adjusted
 				uint8_t w = distance[x][y];
 
 				open.pop_back();
-				closed[get_i(x,y)] = 1;
-#ifdef origin
-				for (int i = x + 1; i < 8; ++i) {
-					if (!_bd(i, y).is_empty()) break;
-					if (!closed[eigen_value({ i, y })]) {
-						open.emplace_back(i, y);
-						distance[i][y] = min(distance[i][y], (uint8_t)(w + 1));
-					}
-				}
-				for (int i = x - 1; i >= 0; --i) {
-					if (!_bd(i, y).is_empty()) break;
-					if (!closed[eigen_value({ i, y })]) {
-						open.emplace_back(i, y);
-						distance[i][y] = min(distance[i][y], (uint8_t)(w + 1));
-					}
-				}
-				for (int i = y + 1; i < 8; ++i) {
-					if (!_bd(x, i).is_empty()) break;
-					if (!closed[eigen_value({ x, i })]) {
-						open.emplace_back(x, i);
-						distance[x][i] = min(distance[x][i], (uint8_t)(w + 1));
-					}
-				}
-				for (int i = y - 1; i >= 0; --i) {
-					if (!_bd(x, i).is_empty()) break;
-					if (!closed[eigen_value({ x, i })]) {
-						open.emplace_back(x, i);
-						distance[x][i] = min(distance[x][i], (uint8_t)(w + 1));
-					}
-				}
-				for (int i = x + 1, j = y + 1; i < 8 && j < 8; ++i, ++j) {
-					if (!_bd(i, j).is_empty()) break;
-					if (!closed[eigen_value({ i, j })]) {
-						open.emplace_back(i, j);
-						distance[i][j] = min(distance[i][j], (uint8_t)(w + 1));
-					}
-				}
-				for (int i = x - 1, j = y + 1; i >= 0 && j < 8; --i, ++j) {
-					if (!_bd(i, j).is_empty()) break;
-					if (!closed[eigen_value({ i, j })]) {
-						open.emplace_back(i, j);
-						distance[i][j] = min(distance[i][j], (uint8_t)(w + 1));
-					}
-				}
-				for (int i = x + 1, j = y - 1; i < 8 && j >= 0; ++i, --j) {
-					if (!_bd(i, j).is_empty()) break;
-					if (!closed[eigen_value({ i, j })]) {
-						open.emplace_back(i, j);
-						distance[i][j] = min(distance[i][j], (uint8_t)(w + 1));
-					}
-				}
-				for (int i = x - 1, j = y - 1; i >= 0 && j >= 0; --i, --j) {
-					if (!_bd(i, j).is_empty()) break;
-					if (!closed[eigen_value({ i, j })]) {
-						open.emplace_back(i, j);
-						distance[i][j] = min(distance[i][j], (uint8_t)(w + 1));
-					}
-				}
-#endif
+				closed[get_i(x, y)] = 1;
+
 				auto my_moves = amz::get_all_possible_i(_bd.get_table(), get_i(x, y));
 				for (auto i : my_moves)
 				{
 					auto [x1, y1] = get_ij(i);
-					if (!closed[get_i( x1,y1 )])
+					if (!closed[get_i(x1, y1)])
 					{
 						open.push_back({ x1,y1 });
 						distance[x1][y1] = min(distance[x1][y1], (uint8_t)(w + 1));
@@ -271,77 +218,100 @@ namespace eval_adj	// evaluation adjusted
 			}
 			distance[fx][fy] = 255;
 		}
-		void _single_king_min_moves(tuple<int, int> from, distance_matrix& distance)
+		void _single_king_min_moves(pair<len_t, len_t> from, distance_matrix& distance)
 		{
-			vector<tuple<int, int>> open;
-			bitset<64> closed;
+			/*
+			vector<off_i_t> open;
+			vector<bool> closed(64);
 
 			open.reserve(32);
 
-			open.push_back(from);
 			auto [fx, fy] = from;
+			open.push_back(get_i(fx, fy));
 			distance[fx][fy] = 0;
 
 			while (!open.empty()) {
 				auto tmp = open.back();
-				auto [x, y] = tmp;
+				auto [x, y] = get_ij(tmp);
 				uint8_t w = distance[x][y];
 
 				open.pop_back();
-				closed[get_i(x, y)] = 1;
+				closed[tmp] = 1;
 
-				if (x + 1 < 8)
-					if (_bd(x + 1, y).is_empty() && !closed[get_i(x + 1, y)])
+				if (x < 7)
+					if (_bd(tmp + 8).is_empty() && !closed[tmp + 8])
 					{
-						open.emplace_back(x + 1, y);
+						open.push_back(tmp + 8);
 						distance[x + 1][y] = min(distance[x + 1][y], (uint8_t)(w + 1));
 					}
-				if (x - 1 >= 0)
-					if (_bd(x - 1, y).is_empty() && !closed[get_i(x - 1, y)])
+				if (x >= 1)
+					if (_bd(tmp - 8).is_empty() && !closed[tmp - 8])
 					{
-						open.emplace_back(x - 1, y);
+						open.push_back(tmp - 8);
 						distance[x - 1][y] = min(distance[x - 1][y], (uint8_t)(w + 1));
 					}
-				if (y + 1 < 8)
-					if (_bd(x, y + 1).is_empty() && !closed[get_i(x, y + 1)])
+				if (y < 7)
+					if (_bd(tmp + 1).is_empty() && !closed[tmp + 1])
 					{
-						open.emplace_back(x, y + 1);
+						open.push_back(tmp + 1);
 						distance[x][y + 1] = min(distance[x][y + 1], (uint8_t)(w + 1));
 					}
-				if (y - 1 >= 0)
-					if (_bd(x, y - 1).is_empty() && !closed[get_i(x, y - 1)])
+				if (y >= 1)
+					if (_bd(tmp - 1).is_empty() && !closed[tmp - 1])
 					{
-						open.emplace_back(x, y - 1);
+						open.push_back(tmp - 1);
 						distance[x][y - 1] = min(distance[x][y - 1], (uint8_t)(w + 1));
 					}
-				if (x + 1 < 8 && y + 1 < 8)
-					if (_bd(x + 1, y + 1).is_empty() && !closed[get_i(x + 1, y + 1)])
+				if (x < 7 && y < 7)
+					if (_bd(tmp + 9).is_empty() && !closed[tmp + 9])
 					{
-						open.emplace_back(x + 1, y + 1);
+						open.push_back(tmp + 9);
 						distance[x + 1][y + 1] = min(distance[x + 1][y + 1], (uint8_t)(w + 1));
 					}
-				if (x - 1 >= 0 && y + 1 < 8)
-					if (_bd(x - 1, y + 1).is_empty() && !closed[get_i(x - 1, y + 1)])
+				if (x >= 1 && y < 7)
+					if (_bd(tmp - 7).is_empty() && !closed[tmp - 7])
 					{
-						open.emplace_back(x - 1, y + 1);
+						open.push_back(tmp - 7);
 						distance[x - 1][y + 1] = min(distance[x - 1][y + 1], (uint8_t)(w + 1));
 					}
-				if (x + 1 < 8 && y - 1 >= 0)
-					if (_bd(x + 1, y - 1).is_empty() && !closed[get_i(x + 1, y - 1)])
+				if (x < 7 && y >= 1)
+					if (_bd(tmp + 7).is_empty() && !closed[tmp + 7])
 					{
-						open.emplace_back(x + 1, y - 1);
+						open.push_back(tmp + 7);
 						distance[x + 1][y - 1] = min(distance[x + 1][y - 1], (uint8_t)(w + 1));
 					}
-				if (x - 1 >= 0 && y - 1 >= 0)
-					if (_bd(x - 1, y - 1).is_empty() && !closed[get_i(x - 1, y - 1)])
+				if (x >= 1 && y >= 1)
+					if (_bd(tmp - 9).is_empty() && !closed[tmp - 9])
 					{
-						open.emplace_back(x - 1, y - 1);
+						open.push_back(tmp - 9);
 						distance[x - 1][y - 1] = min(distance[x - 1][y - 1], (uint8_t)(w + 1));
 					}
 			}
 
 			distance[fx][fy] = 255;
+			*/
+			RAQueue<pair<len_t, len_t>> que(64);
+
+			auto [x, y] = from;
+			que.push(from);
+			distance[x][y] = 0;
+			while (!que.empty())
+			{
+				pair<len_t, len_t> p = que.pop();
+				for (int j = 0; j < 8; j++)
+				{
+					len_t nx = p.first + dx[j], ny = p.second + dy[j];
+					if (inMap(nx, ny) && _bd.is_empty(get_i(nx, ny)) && distance[nx][ny] > distance[p.first][p.second] + 1)
+					{
+						que.push(make_pair(nx, ny));
+						distance[nx][ny] = distance[p.first][p.second] + 1;
+					}
+				}
+			}
+			distance[x][y] = 255;
 		}
+		bool inMap(int i, int j) { return !(((i << 4) + j) & 0x88); }
+	
 		double _amazon_mobility(size_t player_idx, size_t amazon_idx) {
 			double a = 0.0;
 			for (int i = 0; i < 8; ++i)

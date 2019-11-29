@@ -1,6 +1,8 @@
 ﻿
 #include "std.h"
 
+// #define __GNUC__
+
 #include "sio.h"
 #include "searcher.h"
 
@@ -21,8 +23,8 @@ int main()
 		auto end = steady_clock::now();
 		auto diff = duration_cast<milliseconds>(end - starttime).count();
 		cout << "time: " << diff << "ms" << endl;
-		//if (_Is_dft_move(mm))
-			//break;
+		if (_Is_dft_move(mm))
+			break;
 		cg.make_move(mm);
 		_Debug_paint(cg.get_status());
 		cout << (cg.get_color() == chess_color::black ? "black move: " : "white move: ") << endl;

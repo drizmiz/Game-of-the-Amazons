@@ -47,5 +47,8 @@
     <ClInclude Include="eval_head.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="BagQueueAndStack.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

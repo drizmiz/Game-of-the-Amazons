@@ -3,6 +3,8 @@
 
 #ifndef __GNUC__
 
+#define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
+
 #include <algorithm>
 #include <bitset>
 #include <deque>

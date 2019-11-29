@@ -32,7 +32,7 @@ namespace eval_adj	// evaluation adjusted
 	}
 	class player {
 	public:
-		using single_player = std::array<std::tuple<len_t, len_t>, 4>;
+		using single_player = std::array<std::pair<len_t, len_t>, 4>;
 		player(bool is_black, const chess_status& cs) :_is_black(is_black), _cs(cs) {}
 		const single_player self() const {
 			return _is_black ? _Transform_4_to_ij(_cs.get_black()) : _Transform_4_to_ij(_cs.get_white());
@@ -59,6 +59,12 @@ namespace eval_adj	// evaluation adjusted
 		const teil operator()(len_t x, len_t y) const {
 			return _locate_teil(x, y);
 		}
+		const teil operator()(off_i_t i) const {
+			return _locate_teil(i);
+		}
+		const bool is_empty(off_i_t i)const {
+			return!(_cs.get_all() & mask(i));
+		}
 		amz::bit_table get_table()const
 		{
 			return _cs.get_all();
@@ -71,17 +77,9 @@ namespace eval_adj	// evaluation adjusted
 		const teil _locate_teil(len_t x, len_t y) const {
 			return !(_cs.get_all() & mask(x, y));
 		}
-		/*
-		void _count_amazons() const {
-			size_t w = 0, b = 0;
-			for (int i = 0; i < 8; ++i)
-				for (int j = 0; j < 8; ++j)
-					if (_map[i][j].is_white()) ++w;
-					else if (_map[i][j].is_black()) ++b;
-			unexpect(w < 4, "white amazons less than 4");
-			unexpect(b < 4, "black amazons less than 4");
+		const teil _locate_teil(off_i_t i) const {
+			return !(_cs.get_all() & mask(i));
 		}
-		*/
 	private:
 		const chess_status& _cs;
 	};
