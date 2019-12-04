@@ -1,12 +1,10 @@
 ﻿
 #include "std.h"
 
-// #define __GNUC__
-
 #include "sio.h"
 #include "searcher.h"
 
-#ifndef __GNUC__
+#ifndef _BOTZONE_ONLINE
 int main()
 {
 	using namespace std;

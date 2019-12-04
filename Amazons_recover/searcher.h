@@ -1,11 +1,6 @@
 
 #pragma once
 
-// #ifndef __GNUC__
-// #include <algorithm>		// for sort
-// #include <chrono>		// for clock
-// #endif
-
 #include "game.h"
 #include "eval.h"
 
@@ -112,7 +107,7 @@ namespace amz
 
 		if (diff > deadspan)
 		{
-#ifdef __GNUC__
+#ifdef _BOTZONE_ONLINE
 			return inf;
 #else
 			std::cout << "warning: TLE" << std::endl;
@@ -248,7 +243,7 @@ namespace amz
 			eval = res.first;
 			if (timespan == 0)
 			{
-#ifndef __GNUC__
+#ifndef _BOTZONE_ONLINE
 				std::cout << "完全搜索的层数：" << i - 1 << std::endl;
 #endif
 				break;

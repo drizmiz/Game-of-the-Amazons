@@ -2,8 +2,8 @@
 #pragma once
 
 #ifndef __GNUC__
-
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
+#endif
 
 #include <algorithm>
 #include <bitset>
@@ -46,12 +46,17 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#ifndef __GNUC__
 #pragma warning(disable: 26446)		// gsl::at()
 #pragma warning(disable: 26482)		// constexpr array indexs
 #pragma warning(disable: 26440)		// make noexcept functions noexcept
 #pragma warning(disable: 26496)		// make unchanged variables const
 #pragma warning(disable: 26429)		// not_null tag
 // #pragma warning(disable: 26481)	// don't decay array to pointer ( as 26485 )
-
 #endif
 
+/*
+#ifdef __GNUC__
+#define _BOTZONE_ONLINE
+#endif
+*/

@@ -3,7 +3,7 @@
 
 #include "std.h"
 
-#ifndef __GNUC__
+#ifndef _BOTZONE_ONLINE
 template <typename T>
 class Stack
 {
@@ -542,7 +542,7 @@ private:
 		for (; index > 1 && pq[index / 2] < pq[index]; index /= 2)
 			std::swap(pq[index / 2], pq[index]);
 	}
-	void sink(uint index, uint N = pq.size())
+	void sink(uint index, uint N)
 	{
 		for (; 2 * index <= N;)
 		{

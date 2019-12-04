@@ -3,9 +3,6 @@
 
 #include "game.h"
 
-#ifdef __GNUC__
-#define _BOTZONE_ONLINE
-#endif
 #include "eval_main.h"
 #include "csbd.h"
 

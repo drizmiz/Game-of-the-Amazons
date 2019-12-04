@@ -347,3 +347,6 @@ healthchecksdb
 *.diagsession
 *.exe
 /Amazons_recover/Amazons_recover (2).cpp
+*.s
+/Amazons_recover/original_eval.h
+/Amazons_recover/refactored_eval.h
