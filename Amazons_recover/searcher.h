@@ -70,11 +70,11 @@ namespace amz
 					return mm_killer2;
 			// 历史表启发
 		case phase::rest:
-			for (; mm_index < mms.size();)
+			for (; mm_index < mms.size(); )
 			{
-				movement mm = mms.at(mm_index);
-				mm_index++;
-				if (mm != mm_hash)
+				movement mm = mms[mm_index];
+				++mm_index;
+				if (mm != mm_hash && mm != mm_killer1 && mm != mm_killer2)
 					return mm;
 			}
 			// 没有着法了
@@ -85,16 +85,16 @@ namespace amz
 
 	inline bool chess_game::_Permit_null()
 	{
-		return turn_cnt <= 11;
+		return turn_cnt <= 12;
 	}
 
-	constexpr int _null_cut = 2;
+	constexpr int _null_cut = 1;
 	int pvs_window = 100;
 	constexpr int limit_depth = 56;
 	eval_t chess_game::_Alphabeta(int depth, eval_t alpha, eval_t beta, bool _no_null = false)
 	{
-		pvs_window = 12500 / pow(1.6, turn_cnt);
-		if (pvs_window <= 100)pvs_window = 100;
+		pvs_window = 25000 * eval_adj::quick_pow_s(2, -turn_cnt);
+		if (pvs_window <= 1000)pvs_window = 1000;
 
 		using namespace std::chrono;
 		// 置换表查询
@@ -191,9 +191,9 @@ namespace amz
 		}
 	}
 
-	std::pair<eval_t, movement> chess_game::_Root_search(int depth)
+	std::pair<eval_t, movement> chess_game::_Root_search(int depth,movement lastmove)
 	{
-		movement mm_hash = dft_movement;
+		const movement& mm_hash = lastmove;
 		// 初始化搜索
 		eval_t eval_max = -inf;
 		movement mm_best = dft_movement;
@@ -226,10 +226,10 @@ namespace amz
 		_Set_best_move(mm_best, depth);
 		return { eval_max,mm_best };
 	}
-	movement chess_game::_Search_till_timeout() // unit: ms
+	
+	movement chess_game::_Search_till_timeout()
 	{
 		using namespace std::chrono;
-		this->rt.clear();
 
 		movement mm_best = dft_movement;
 		eval_t eval = _Evaluate(this->get_status(), this->get_color(), turn_cnt);
@@ -238,7 +238,7 @@ namespace amz
 
 		for (int i = 1; ; ++i)
 		{
-			auto res = _Root_search(i);
+			auto res = _Root_search(i, mm_best);
 			mm_best = res.second;
 			eval = res.first;
 			if (timespan == 0)

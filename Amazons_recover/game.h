@@ -155,13 +155,10 @@ namespace amz
 		bool _Permit_null();
 		eval_t _Alphabeta(int depth, eval_t alpha, eval_t beta, bool _no_null);
 		void _Set_best_move(movement mm_best, int depth);
-		void _Set_best_move();
-		eval_t _Alphabeta(int depth, eval_t beta);
 		//movement _Root_search(int depth);
 		eval_t MTD_f(int depth, eval_t test);
-		movement _Root_search(int depth, eval_t alpha, eval_t beta, eval_t& test);
-		std::pair<eval_t, movement> _Root_search(int depth, eval_t alpha, eval_t beta);
 		std::pair<eval_t, movement> _Root_search(int depth);
+		std::pair<eval_t, movement> _Root_search(int depth, movement lastmove);
 		movement _Search_till_timeout();
 		
 		bit_table _Mine() noexcept
@@ -258,8 +255,9 @@ namespace amz
 		movement generate_next_move()
 		{
 			starttime = std::chrono::steady_clock::now();
+			timespan = get_turn() <= 1 ? 800 : 850;
 
-			timespan = get_turn() <= 1 ? 700 : get_turn() <= 2 ? 750 : get_turn() <= 3 ? 800 : 850;
+			this->rt.clear();
 
 			return _Search_till_timeout();
 		}

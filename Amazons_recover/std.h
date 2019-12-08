@@ -5,6 +5,9 @@
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
 #endif
 
+#ifndef _PREPROCESSER_ONLY		// to generate a single cpp
+#include <cassert>
+
 #include <algorithm>
 #include <bitset>
 #include <deque>
@@ -45,6 +48,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
+#endif
 
 #ifndef __GNUC__
 #pragma warning(disable: 26446)		// gsl::at()
@@ -54,9 +58,3 @@
 #pragma warning(disable: 26429)		// not_null tag
 // #pragma warning(disable: 26481)	// don't decay array to pointer ( as 26485 )
 #endif
-
-/*
-#ifdef __GNUC__
-#define _BOTZONE_ONLINE
-#endif
-*/

@@ -5,8 +5,6 @@
 #include "eval_head.h"
 #include "container.h"
 
-// #define THROW_EXCEPTION
-
 namespace eval_adj	// evaluation adjusted
 {
 	// 评估加权器
@@ -52,6 +50,28 @@ namespace eval_adj	// evaluation adjusted
 			return v * w_m[w];
 		}
 	};
+
+	unsigned quick_pow(unsigned x, unsigned n)
+	{
+		int res = x;
+		int ans = 1;
+		for (; n;)
+		{
+			if (n & 1)
+				ans *= res;
+			res *= res;
+			n >>= 1;
+		}
+		return ans;
+	}
+
+	double quick_pow_s(int x, int n) {
+		if (n <= -31)return 0.0;
+		if (n < 0)
+			return 1.0 / quick_pow(x, -n);
+		else
+			return quick_pow(x, n);
+	}
 
 	// 评估器
 	class evaluator {
@@ -117,7 +137,7 @@ namespace eval_adj	// evaluation adjusted
 		}
 	private:
 		void _generate_distance_matrix() {
-			int idx = 0;
+			//int idx = 0;
 			//for (auto& m : _pl.self())
 				//_single_queen_min_moves(m, _dm_queen[0][idx++]);
 			//idx = 0;
@@ -138,7 +158,7 @@ namespace eval_adj	// evaluation adjusted
 		}
 		double _territory_determine_delta(uint8_t m, uint8_t n) {
 			if (m == 255 && n == 255) return 0.0;
-			if (m == n) return 0.125;
+			if (m == n) return 0.125;		// 先手优势
 			if (m < n) return 1.0;
 			return -1.0;
 		}
@@ -149,23 +169,6 @@ namespace eval_adj	// evaluation adjusted
 					uint8_t min2 = min(in[2][i][j], in[3][i][j]);
 					out[i][j] = min(min1, min2);
 				}
-		}
-		unsigned quick_pow(unsigned x, unsigned n)
-		{
-			int res = x;
-			int ans = 1;
-			while (n)
-			{
-				if (n & 1)
-					ans *= res;
-				res *= res;
-				n >>= 1;
-			}
-			return ans;
-		}
-		double quick_pow_s(int x, int n) {
-			if (n <= -31)return 0.0;
-			return 1.0 / quick_pow(x, -n);
 		}
 		pair<double, double> _t1_c1() {
 			double t1 = 0, c1 = 0;
