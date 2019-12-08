@@ -20,13 +20,13 @@ namespace amz
 			return (_from == mm2._from && _to == mm2._to && _obs == mm2._obs);
 		}
 
-		const std::pair<len_t, len_t> from() const {
+		const STD pair<len_t, len_t> from() const {
 			return get_ij(_from);
 		}
-		const std::pair<len_t, len_t> to() const {
+		const STD pair<len_t, len_t> to() const {
 			return get_ij(_to);
 		}
-		const std::pair<len_t, len_t> arrow() const {
+		const STD pair<len_t, len_t> arrow() const {
 			return get_ij(_obs);
 		}
 
@@ -100,10 +100,10 @@ namespace amz
 			hashe.flag = hashf;
 			hashe.depth = depth;
 		}
-		std::pair<eval_t, movement> probe_hash(const chess_status& cs,
+		STD pair<eval_t, movement> probe_hash(const chess_status& cs,
 			int depth, eval_t alpha, eval_t beta)
 		{
-			using std::make_pair;
+			using STD make_pair;
 			uint64 key = cs._Hash();
 			hash_tag& hashe = hash_table[key % hashtable_size];
 
@@ -136,7 +136,9 @@ namespace amz
 			return history_table[index];
 		}
 	};
+
 	record_table _rt;
+	
 	class chess_game
 	{
 	private:
@@ -154,30 +156,37 @@ namespace amz
 
 		bool _Permit_null();
 		eval_t _Alphabeta(int depth, eval_t alpha, eval_t beta, bool _no_null);
-		void _Set_best_move(movement mm_best, int depth);
-		//movement _Root_search(int depth);
-		eval_t MTD_f(int depth, eval_t test);
-		std::pair<eval_t, movement> _Root_search(int depth);
-		std::pair<eval_t, movement> _Root_search(int depth, movement lastmove);
+		// eval_t MTD_f(int depth, eval_t test);
+		STD pair<eval_t, movement> _Root_search(int depth, movement lastmove);
 		movement _Search_till_timeout();
-		
-		bit_table _Mine() noexcept
+
+		void _Set_best_move(movement mm_best, int depth)
 		{
+			rt.record_history(mm_best, depth);
+			movement* lp_killers = rt.killer_moves[distance];
+			if (lp_killers[0] != mm_best)
+			{
+				lp_killers[1] = lp_killers[0];
+				lp_killers[0] = mm_best;
+			}
+		}
+		
+		bit_table _Mine() noexcept {
 			return my_color == chess_color::black ? _cs.black : _cs.white;
 		}
-		std::vector<movement> _Get_all_possible_moves()
+		STD vector<movement> _Get_all_possible_moves()
 		{
-			std::vector<movement> ret;
+			STD vector<movement> ret;
 			ret.reserve(4 * max_moves * max_moves);
 			movement cur = dft_movement;
 			for (const off_i_t chess : _Transform_to_i(_Mine()))
 			{
 				cur.fromi() = chess;
-				for (const off_i_t dest : get_all_possible_i(_cs.all.board(), chess))
+				for (const off_i_t dest : get_all_possible_i(_cs.all.merged_board(), chess))
 				{
 					cur.toi() = dest;
 					_cs.move_piece(chess, dest, my_color);
-					for (const off_i_t obs : get_all_possible_i(_cs.all.board(), dest))
+					for (const off_i_t obs : get_all_possible_i(_cs.all.merged_board(), dest))
 					{
 						cur.obsi() = obs;
 						ret.push_back(cur);
@@ -262,5 +271,4 @@ namespace amz
 			return _Search_till_timeout();
 		}
 	};
-
 }

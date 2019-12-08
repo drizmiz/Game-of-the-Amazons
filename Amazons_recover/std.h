@@ -57,4 +57,7 @@
 #pragma warning(disable: 26496)		// make unchanged variables const
 #pragma warning(disable: 26429)		// not_null tag
 // #pragma warning(disable: 26481)	// don't decay array to pointer ( as 26485 )
+
+#define STD ::std::
+
 #endif

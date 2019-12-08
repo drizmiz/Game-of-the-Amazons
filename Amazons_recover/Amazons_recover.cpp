@@ -38,7 +38,6 @@ int main()
 {
 	using namespace std;
 	using namespace amz;
-	ios::sync_with_stdio(false);
 	amz::initialize();
 	amz::chess_game cg = sio::input(cin);
 	const movement mm = cg.generate_next_move();

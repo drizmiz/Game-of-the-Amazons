@@ -17,23 +17,23 @@ namespace amz
 	}
 	int _Evaluate(const chess_status& cs, chess_color color,int turn_cnt)
 	{
-		using namespace eval_adj;
+		using namespace ev;
 		player pl((color == chess_color::black), cs);
-		board brd(cs);
-		evaluation_weight_function ewf;
+		merged_board brd(cs);
+		evaluation_weighter ewf;
 		evaluator eval(brd, pl, turn_cnt, ewf);
 		return static_cast<int>(eval.evaluate() * 10000);
 	}
 	int _Debug_evaluate(const chess_status& cs, chess_color color, int turn_cnt, std::ostream& out = std::cout)
 	{
-		using namespace eval_adj;
+		using namespace ev;
 		player pl((color == chess_color::black), cs);
-		board brd(cs);
-		evaluation_weight_function ewf;
+		merged_board brd(cs);
+		evaluation_weighter ewf;
 		evaluator ev(brd, pl, turn_cnt, ewf);
 
 		double r = 0;
-		ev._generate_distance_matrix();
+		ev._Generate_distance_matrix();
 		out << "Evaluate: " << std::endl;
 		double tmp = 0;
 		tmp = ev._territory_ingredient();

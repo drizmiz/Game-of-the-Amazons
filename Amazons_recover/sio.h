@@ -25,21 +25,15 @@ namespace sio // simple io
 			// 首先是对手行动
 			in >> from_i >> from_j >> to_i >> to_j >> obs_i >> obs_j;
 
-			//csbd::_Debug_paint(cg.get_status());
 			if (from_i == -1)
-			{
 				cg.set_color(chess_color::black);
-			}
 			else
-			{
 				cg.make_move(from_i, from_j, to_i, to_j, obs_i, obs_j);
-			}
 
 			// 然后是自己当时的行动
 			// 对手行动总比自己行动多一次
 			if (i < turn - 1)
 			{
-				//csbd::_Debug_paint(cg.get_status());
 				in >> from_i >> from_j >> to_i >> to_j >> obs_i >> obs_j;
 				cg.make_move(from_i, from_j, to_i, to_j, obs_i, obs_j);
 			}
@@ -47,13 +41,6 @@ namespace sio // simple io
 
 		cg.set_turn(turn);
 		return cg;
-	}
-
-	void single_line_input(std::istream& in, amz::chess_game& cg)
-	{
-		int from_i{}, from_j{}, to_i{}, to_j{}, obs_i{}, obs_j{};
-		in >> from_i >> from_j >> to_i >> to_j >> obs_i >> obs_j;
-		cg.make_move(from_i, from_j, to_i, to_j, obs_i, obs_j);
 	}
 
 	void output(std::ostream& out, amz::movement mm)

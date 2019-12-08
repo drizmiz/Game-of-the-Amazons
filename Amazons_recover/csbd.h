@@ -3,19 +3,16 @@
 
 #include "std.h"
 
-#pragma region definition
-// 下面是定义
-namespace amz // chess board
+namespace amz
 {
 #pragma region using declaration
-	using uint64 = unsigned long long;
+	using uint64 = uint64_t;
 	using bit_table = uint64;
-	using byte = unsigned char;
+	using byte = uint8_t;
 	using index_t = byte;
 	using off_i_t = byte;
 	using len_t = byte;
 	using eval_t = int;
-	//using movement = off_i_t;
 #pragma endregion
  // the board looks like this:
  // 8	A8(index=0)	...	H8(index=7)
@@ -551,7 +548,7 @@ namespace amz // chess board
 	}
 #pragma endregion
 
-#pragma region 一些结构（...to be done）
+#pragma region 一些结构
 
 	class chess_board
 	{
@@ -561,11 +558,11 @@ namespace amz // chess board
 		bit_table _board_45_left;
 		bit_table _board_45_right;
 	public:
-		chess_board(bit_table board) noexcept :
-			_board(board),
-			_board_45_left(_Rotate_45degree_left(board)),
-			_board_45_right(_Rotate_45degree_right(board)),
-			_board_90_right(_Rotate_90degree_right(board))
+		chess_board(bit_table merged_board) noexcept :
+			_board(merged_board),
+			_board_45_left(_Rotate_45degree_left(merged_board)),
+			_board_45_right(_Rotate_45degree_right(merged_board)),
+			_board_90_right(_Rotate_90degree_right(merged_board))
 		{}
 		explicit chess_board() noexcept : chess_board(0)
 		{}
@@ -612,7 +609,7 @@ namespace amz // chess board
 			return row | col | main_diag | counter_diag;
 		}
 
-		const bit_table board() const noexcept
+		const bit_table merged_board() const noexcept
 		{
 			return _board;
 		}
@@ -671,7 +668,7 @@ namespace amz // chess board
 			uint64 val = initial_big_num;
 			_Hash_append_u64(val, this->black);
 			_Hash_append_u64(val, this->white);
-			_Hash_append_u64(val, this->all.board());
+			_Hash_append_u64(val, this->all.merged_board());
 			return val;
 		}
 
@@ -703,7 +700,7 @@ namespace amz // chess board
 
 		bit_table get_black() const { return black; }
 		bit_table get_white() const { return white; }
-		bit_table get_all() const { return all.board(); }
+		bit_table get_all() const { return all.merged_board(); }
 	};
 
 #pragma endregion
@@ -738,7 +735,7 @@ namespace amz // chess board
 				std::cout << 'B';
 			else if ((cs.white >> i) & 1)
 				std::cout << 'W';
-			else if ((cs.all.board() >> i) & 1)
+			else if ((cs.all.merged_board() >> i) & 1)
 				std::cout << 'A';
 			else
 				std::cout << '0';
@@ -753,4 +750,3 @@ namespace amz // chess board
 	}
 #pragma endregion
 }
-#pragma endregion

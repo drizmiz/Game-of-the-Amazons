@@ -22,7 +22,7 @@ namespace amz
 		movement mm_hash, mm_killer1, mm_killer2;
 		phase cur_phase;
 		int mm_index;
-		std::vector<movement> mms;
+		STD vector<movement> mms;
 
 		chess_game& cg_parent;
 		mm_sort(chess_game& cg, movement _mm_hash) noexcept :
@@ -49,8 +49,8 @@ namespace amz
 			// 生成所有着法
 		case phase::gen_moves:
 			cur_phase = phase::killer1;
-			mms = std::move(cg_parent._Get_all_possible_moves());
-			std::sort(mms.begin(), mms.end(),
+			mms = STD move(cg_parent._Get_all_possible_moves());
+			STD sort(mms.begin(), mms.end(),
 				[this](movement mm1, movement mm2) {
 					return cg_parent.rt.probe_history(mm1) >
 						cg_parent.rt.probe_history(mm2);
@@ -61,12 +61,12 @@ namespace amz
 		case phase::killer1:
 			cur_phase = phase::killer2;
 			if (mm_killer1 != mm_hash && !_Is_dft_move(mm_killer1))
-				if (std::find(mms.begin(), mms.end(), mm_killer1) != mms.end())
+				if (STD find(mms.begin(), mms.end(), mm_killer1) != mms.end())
 					return mm_killer1;
 		case phase::killer2:
 			cur_phase = phase::rest;
 			if (mm_killer2 != mm_hash && !_Is_dft_move(mm_killer2))
-				if (std::find(mms.begin(), mms.end(), mm_killer2) != mms.end())
+				if (STD find(mms.begin(), mms.end(), mm_killer2) != mms.end())
 					return mm_killer2;
 			// 历史表启发
 		case phase::rest:
@@ -83,18 +83,17 @@ namespace amz
 		}
 	}
 
-	inline bool chess_game::_Permit_null()
-	{
+	inline bool chess_game::_Permit_null() {
 		return turn_cnt <= 12;
 	}
 
 	constexpr int _null_cut = 1;
-	int pvs_window = 100;
-	constexpr int limit_depth = 56;
+	int _pvs_window = 100;
+	constexpr int _limit_depth = 56;
 	eval_t chess_game::_Alphabeta(int depth, eval_t alpha, eval_t beta, bool _no_null = false)
 	{
-		pvs_window = 25000 * eval_adj::quick_pow_s(2, -turn_cnt);
-		if (pvs_window <= 1000)pvs_window = 1000;
+		_pvs_window = static_cast<int>(25000 * ev::_quick_pow_s(2, -turn_cnt));
+		if (_pvs_window <= 1000)_pvs_window = 1000;
 
 		using namespace std::chrono;
 		// 置换表查询
@@ -103,14 +102,14 @@ namespace amz
 			return _val;
 		// 超时
 		auto end = steady_clock::now();
-		auto diff = duration_cast<std::chrono::milliseconds>(end - starttime).count();
+		auto diff = duration_cast<milliseconds>(end - starttime).count();
 
 		if (diff > deadspan)
 		{
 #ifdef _BOTZONE_ONLINE
 			return inf;
 #else
-			std::cout << "warning: TLE" << std::endl;
+			STD cout << "warning: TLE" << STD endl;
 #endif
 		}
 		if (diff > timespan)
@@ -119,7 +118,7 @@ namespace amz
 			return _Evaluate(this->get_status(), this->get_color(), turn_cnt);
 		}
 		// 到达深度
-		if (depth <= 0 || distance > limit_depth)
+		if (depth <= 0 || distance > _limit_depth)
 		{
 			const eval_t val = _Evaluate(this->get_status(), this->get_color(), turn_cnt);
 			// rt.record_hash(this->get_status(), , depth, val, node_f::pv);
@@ -129,7 +128,7 @@ namespace amz
 		if (!_no_null && _Permit_null())
 		{
 			null_move();
-			eval_t ev = -_Alphabeta(depth - 1 - _null_cut, -beta, -(beta - pvs_window), true);
+			eval_t ev = -_Alphabeta(depth - 1 - _null_cut, -beta, -(beta - _pvs_window), true);
 			undo_null_move();
 			if (ev >= beta)
 				return ev;
@@ -150,7 +149,7 @@ namespace amz
 				eval = -_Alphabeta(depth - 1, -beta, -alpha);
 			else
 			{
-				eval = -_Alphabeta(depth - 1, -(alpha + pvs_window), -alpha);
+				eval = -_Alphabeta(depth - 1, -(alpha + _pvs_window), -alpha);
 				if ((eval > alpha) && (eval < beta))
 					eval = -_Alphabeta(depth - 1, -beta, -alpha);
 			}
@@ -180,18 +179,7 @@ namespace amz
 		return eval_max;
 	}
 
-	void chess_game::_Set_best_move(movement mm_best,int depth)
-	{
-		rt.record_history(mm_best, depth);
-		movement* lp_killers = rt.killer_moves[distance];
-		if (lp_killers[0] != mm_best)
-		{
-			lp_killers[1] = lp_killers[0];
-			lp_killers[0] = mm_best;
-		}
-	}
-
-	std::pair<eval_t, movement> chess_game::_Root_search(int depth,movement lastmove)
+	STD pair<eval_t, movement> chess_game::_Root_search(int depth,movement lastmove)
 	{
 		const movement& mm_hash = lastmove;
 		// 初始化搜索
@@ -209,7 +197,7 @@ namespace amz
 				eval = -_Alphabeta(depth - 1, -inf, inf, true);
 			else
 			{
-				eval = -_Alphabeta(depth - 1, -(eval_max + pvs_window), -eval_max);
+				eval = -_Alphabeta(depth - 1, -(eval_max + _pvs_window), -eval_max);
 				if (eval > eval_max)
 					eval = -_Alphabeta(depth - 1, -inf, -eval_max, true);
 			}
@@ -244,7 +232,7 @@ namespace amz
 			if (timespan == 0)
 			{
 #ifndef _BOTZONE_ONLINE
-				std::cout << "完全搜索的层数：" << i - 1 << std::endl;
+				STD cout << "完全搜索的层数：" << i - 1 << STD endl;
 #endif
 				break;
 			}
