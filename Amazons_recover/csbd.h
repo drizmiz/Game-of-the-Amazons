@@ -464,8 +464,8 @@ namespace amz
 		//for (off_i_t i = 0; i < 64; ++i)
 		 //if ((in >> i) & 1)
 		  //return i;
-		uint64 n;
 #ifndef __GNUC__
+		/*
 		n = 62;
 
 		if ((in >> 32) == 0) { n -= 32; in <<= 32; }
@@ -476,13 +476,21 @@ namespace amz
 		n += (in >> 63);
 
 		if (in == 0) return 64;
+		*/
+		unsigned long n;
+		char res = _BitScanReverse64(&n, in);
+		if (res)return n;
+		else return 64;
 #else
+		uint64 n;
 		__asm__(R"(
-			btrq %1, %0
-			cmoveq %2, %0
+            mov $64,%%r9
+			bsr %1,%0
+            cmove %%r9,%0
 			)"
 			: "=r"(n)
-			: "r"(in), "r"(0x40ull)
+			: "r"(in)
+			: "%r9"
 		);
 #endif
 		return n; // 这里找到的是最高位的位置
