@@ -210,8 +210,7 @@ namespace amz
 	}
 	bit_table diag_main_moves[64][256];
 	bit_table diag_counter_moves[64][256];
-	// 这是没有用的部分
-		void _Initialize_diag() noexcept
+	void _Initialize_diag() noexcept
 	{
 		// FOR main direction
 		for (int i = 0; i < 64; ++i)
@@ -460,12 +459,14 @@ namespace amz
 	{
 		return (table >> i) & 1;
 	}
-	constexpr off_i_t _Select_highest(bit_table in)
+	off_i_t _Select_highest(bit_table in)
 	{
 		//for (off_i_t i = 0; i < 64; ++i)
 		 //if ((in >> i) & 1)
 		  //return i;
-		off_i_t n = 62;
+		uint64 n;
+#ifndef __GNUC__
+		n = 62;
 
 		if ((in >> 32) == 0) { n -= 32; in <<= 32; }
 		if ((in >> 48) == 0) { n -= 16; in <<= 16; }
@@ -475,7 +476,15 @@ namespace amz
 		n += (in >> 63);
 
 		if (in == 0) return 64;
-
+#else
+		__asm__(R"(
+			btrq %1, %0
+			cmoveq %2, %0
+			)"
+			: "=r"(n)
+			: "r"(in), "r"(0x40ull)
+		);
+#endif
 		return n; // 这里找到的是最高位的位置
 	}
 	constexpr bit_table _Select_highest_mask(bit_table in)

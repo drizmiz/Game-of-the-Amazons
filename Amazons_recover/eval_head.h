@@ -3,7 +3,7 @@
 
 #include "game.h"
 
-namespace ev	// evaluation adjusted
+namespace ev	// evaluation
 {
 	using namespace amz;
 

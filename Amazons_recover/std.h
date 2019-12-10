@@ -6,6 +6,7 @@
 #endif
 
 #ifndef _PREPROCESSER_ONLY		// to generate a single cpp
+
 #include <cassert>
 
 #include <algorithm>
@@ -57,7 +58,6 @@
 #pragma warning(disable: 26496)		// make unchanged variables const
 #pragma warning(disable: 26429)		// not_null tag
 // #pragma warning(disable: 26481)	// don't decay array to pointer ( as 26485 )
+#endif
 
 #define STD ::std::
-
-#endif
