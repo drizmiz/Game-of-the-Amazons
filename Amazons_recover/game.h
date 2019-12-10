@@ -179,26 +179,52 @@ namespace amz
 			STD vector<movement> ret;
 			ret.reserve(4 * max_moves * max_moves);
 			movement cur = dft_movement;
-			for (const off_i_t chess : _Transform_to_i(_Mine()))
+
+			bit_table mine = _Mine();
+
+			for (;;)
 			{
-				cur.fromi() = chess;
-				for (const off_i_t dest : get_all_possible_i(_cs.all.merged_board(), chess))
+				const off_i_t source = _Select_highest(mine);
+				if (source == 64)
+					break;
+				cur.fromi() = source;
+
+				bit_table dests = _cs.all.get_all_possible_moves(source);
+				for (;;)
 				{
+					const off_i_t dest = _Select_highest(dests);
+					if (dest == 64)
+						break;
+
 					cur.toi() = dest;
-					_cs.move_piece(chess, dest, my_color);
-					for (const off_i_t obs : get_all_possible_i(_cs.all.merged_board(), dest))
+					_cs.move_piece(source, dest, my_color);
+
+					bit_table obstacles = _cs.all.get_all_possible_moves(dest);
+					for (;;)
 					{
+						const off_i_t obs = _Select_highest(obstacles);
+						if (obs == 64)
+							break;
+
 						cur.obsi() = obs;
 						ret.push_back(cur);
+
+						undo_place_bit(obstacles, obs);
 					}
-					_cs.move_piece(dest, chess, my_color);
+					
+					_cs.move_piece(dest, source, my_color);
+
+					undo_place_bit(dests, dest);
 				}
+
+				undo_place_bit(mine, source);
 			}
+
 			return ret;
 		}
 	public:
 		chess_game() noexcept :
-			_cs(), my_color(chess_color::white), deadspan(950), turn_cnt(0),_add_turn(false)
+			_cs(), my_color(chess_color::white), timespan(0), deadspan(950), turn_cnt(0), _add_turn(false)
 		{}
 		inline chess_color get_color() noexcept { return my_color; }
 		inline void set_color(chess_color cc) noexcept { my_color = cc; }

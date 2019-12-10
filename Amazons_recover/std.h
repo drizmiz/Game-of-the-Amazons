@@ -3,12 +3,14 @@
 
 #ifndef __GNUC__
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
+#else
+
 #endif
 
 #ifndef _PREPROCESSER_ONLY		// to generate a single cpp
-
+#undef NDEBUG
 #include <cassert>
-
+#define NDEBUG
 #include <algorithm>
 #include <bitset>
 #include <deque>

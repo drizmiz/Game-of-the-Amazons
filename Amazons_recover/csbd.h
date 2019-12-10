@@ -459,7 +459,7 @@ namespace amz
 	{
 		return (table >> i) & 1;
 	}
-	off_i_t _Select_highest(bit_table in)
+	inline off_i_t _Select_highest(bit_table in)
 	{
 		//for (off_i_t i = 0; i < 64; ++i)
 		 //if ((in >> i) & 1)
@@ -479,21 +479,19 @@ namespace amz
 		*/
 		unsigned long n;
 		char res = _BitScanReverse64(&n, in);
-		if (res)return n;
+		if (res)return static_cast<off_i_t>(n);
 		else return 64;
 #else
+		if (in == 0)return 64;
 		uint64 n;
 		__asm__(R"(
-            mov $64,%%r9
 			bsr %1,%0
-            cmove %%r9,%0
 			)"
 			: "=r"(n)
 			: "r"(in)
-			: "%r9"
 		);
+		return static_cast<off_i_t>(n);
 #endif
-		return n; // 这里找到的是最高位的位置
 	}
 	constexpr bit_table _Select_highest_mask(bit_table in)
 	{
@@ -575,11 +573,11 @@ namespace amz
 		bit_table _board_45_left;
 		bit_table _board_45_right;
 	public:
-		chess_board(bit_table merged_board) noexcept :
-			_board(merged_board),
-			_board_45_left(_Rotate_45degree_left(merged_board)),
-			_board_45_right(_Rotate_45degree_right(merged_board)),
-			_board_90_right(_Rotate_90degree_right(merged_board))
+		chess_board(bit_table board) noexcept :
+			_board(board),
+			_board_45_left(_Rotate_45degree_left(board)),
+			_board_45_right(_Rotate_45degree_right(board)),
+			_board_90_right(_Rotate_90degree_right(board))
 		{}
 		explicit chess_board() noexcept : chess_board(0)
 		{}
@@ -626,7 +624,7 @@ namespace amz
 			return row | col | main_diag | counter_diag;
 		}
 
-		const bit_table merged_board() const noexcept
+		const bit_table board() const noexcept
 		{
 			return _board;
 		}
@@ -685,7 +683,7 @@ namespace amz
 			uint64 val = initial_big_num;
 			_Hash_append_u64(val, this->black);
 			_Hash_append_u64(val, this->white);
-			_Hash_append_u64(val, this->all.merged_board());
+			_Hash_append_u64(val, this->all.board());
 			return val;
 		}
 
@@ -717,7 +715,7 @@ namespace amz
 
 		bit_table get_black() const { return black; }
 		bit_table get_white() const { return white; }
-		bit_table get_all() const { return all.merged_board(); }
+		bit_table get_all() const { return all.board(); }
 	};
 
 #pragma endregion
@@ -752,7 +750,7 @@ namespace amz
 				std::cout << 'B';
 			else if ((cs.white >> i) & 1)
 				std::cout << 'W';
-			else if ((cs.all.merged_board() >> i) & 1)
+			else if ((cs.all.board() >> i) & 1)
 				std::cout << 'A';
 			else
 				std::cout << '0';

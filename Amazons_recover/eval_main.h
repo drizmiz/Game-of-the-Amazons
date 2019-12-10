@@ -73,13 +73,33 @@ namespace ev	// evaluation
 		distance_matrix _merged_dm_queen[2];
 		distance_matrix _merged_dm_king[2];
 
-		int dx[8] = { -1,-1,-1,0,0,1,1,1 };
-		int dy[8] = { -1,0,1,-1,1,-1,0,1 };
+		static constexpr int dx[8] = { -1,-1,-1,0,0,1,1,1 };
+		static constexpr int dy[8] = { -1,0,1,-1,1,-1,0,1 };
+
+#define _dxy(j) {len_t nx = p.first + dx[j], ny = p.second + dy[j];\
+			if (_In_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && distance[nx][ny] > distance[p.first][p.second] + 1)\
+			{\
+				que.push(STD make_pair(nx, ny));\
+				distance[nx][ny] = distance[p.first][p.second] + 1;\
+			}}
+#define _qdxy(j) {for (int step = 1; step < 8; step++)\
+		{\
+			len_t nx = p.first + dx[j] * step, ny = p.second + dy[j] * step;\
+			if (_In_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && dm[nx][ny] > dm[p.first][p.second] + 1)\
+			{\
+				que.push(STD make_pair(nx, ny));\
+				dm[nx][ny] = dm[p.first][p.second] + 1;\
+			}\
+			else break;\
+		}}
+
 		inline bool _In_map(len_t i, len_t j) { return !(((i << 4) + j) & 0x88); }
+
+		fixed_queue<STD pair<len_t, len_t>, 256> que;
 
 		void _Queen_min_moves(STD array<STD pair<len_t, len_t>, 4> froms, distance_matrix& dm)
 		{
-			resizing_queue<STD pair<len_t, len_t>> que(64);
+			que.reset();
 
 			for (int i = 0; i < 8; i++)
 				for (int j = 0; j < 8; j++)
@@ -95,19 +115,14 @@ namespace ev	// evaluation
 				{
 					STD pair<len_t, len_t> p = que.pop();
 
-					for (int j = 0; j < 8; j++)
-					{
-						for (int step = 1; step < 8; step++)
-						{
-							int nx = p.first + dx[j] * step, ny = p.second + dy[j] * step;
-							if (_In_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && dm[nx][ny] > dm[p.first][p.second] + 1)
-							{
-								que.push(STD make_pair(nx, ny));
-								dm[nx][ny] = dm[p.first][p.second] + 1;
-							}
-							else break;
-						}
-					}
+					_qdxy(0);
+					_qdxy(1);
+					_qdxy(2);
+					_qdxy(3);
+					_qdxy(4);
+					_qdxy(5);
+					_qdxy(6);
+					_qdxy(7);
 				}
 			}
 		}
@@ -146,7 +161,7 @@ namespace ev	// evaluation
 		}
 		void _King_min_moves(STD array<STD pair<len_t, len_t>, 4> froms, distance_matrix& distance)
 		{
-			resizing_queue<STD pair<len_t, len_t>> que(64);
+			que.reset();
 
 			for (int i = 0; i < 8; i++)
 				for (int j = 0; j < 8; j++)
@@ -162,15 +177,14 @@ namespace ev	// evaluation
 				{
 					STD pair<len_t, len_t> p = que.pop();
 
-					for (int j = 0; j < 8; j++)
-					{
-						len_t nx = p.first + dx[j], ny = p.second + dy[j];
-						if (_In_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && distance[nx][ny] > distance[p.first][p.second] + 1)
-						{
-							que.push(STD make_pair(nx, ny));
-							distance[nx][ny] = distance[p.first][p.second] + 1;
-						}
-					}
+					_dxy(0);
+					_dxy(1);
+					_dxy(2);
+					_dxy(3);
+					_dxy(4);
+					_dxy(5);
+					_dxy(6);
+					_dxy(7);
 				}
 			}
 		}

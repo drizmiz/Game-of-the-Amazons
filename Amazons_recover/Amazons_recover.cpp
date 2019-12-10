@@ -9,6 +9,24 @@ int main()
 {
 	using namespace std;
 	using namespace amz;
+
+	fixed_queue<int, 9> fq;
+	for (int i = 0; i < 8; ++i)
+		fq.push(i);	
+	fq._Debug();	// 01234567
+	for (int i = 0; i < 4; ++i)
+		cout << fq.pop();	//0123
+	cout << endl;
+	fq._Debug();	//4567
+	for (int i = 0; i < 4; ++i)
+		fq.push(i);	
+	fq._Debug();	// 45670123
+	fq.pop();
+	fq.push(9); fq._Debug();		// 56701239
+	fq.pop();
+	fq.pop();
+	fq.push(0); fq._Debug();		// 7012390
+
 	ios::sync_with_stdio(false);
 	amz::initialize();
 	amz::chess_game cg = sio::input(cin);
