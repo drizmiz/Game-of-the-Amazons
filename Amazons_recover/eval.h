@@ -9,12 +9,6 @@
 
 namespace amz
 {
-	double evaluate(chess_status cs)
-	{
-		static std::default_random_engine engine;
-		static std::uniform_real_distribution<> dis(-100, 100);
-		return dis(engine);
-	}
 	int _Evaluate(const chess_status& cs, chess_color color,int turn_cnt)
 	{
 		using namespace ev;

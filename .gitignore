@@ -350,3 +350,16 @@ healthchecksdb
 *.s
 /Amazons_recover/original_eval.h
 /Amazons_recover/refactored_eval.h
+/gd
+*.out
+/Amazons_recover/.ar.out.swp
+/Amazons_recover/callgrind.out.31
+/Amazons_recover/callgrind.out.51
+/Amazons_recover/callgrind.out.3934
+/Amazons_recover/callgrind.out.3927
+/Amazons_recover/callgrind.out.3915
+/Amazons_recover/callgrind.out.3900
+/Amazons_recover/callgrind.out.3890
+/Amazons_recover/cg.out.01
+*.py
+*.png

@@ -82,8 +82,10 @@ namespace amz
 			memset(hash_table, 0, hashtable_size * sizeof(hash_tag));
 			memset(history_table, 0, history_table_size * sizeof(int));
 			for (int i = 0; i < 64; ++i)
-				for (int j = 0; j < 2; ++j)
-					killer_moves[i][j] = dft_movement;
+			{
+				killer_moves[i][0] = dft_movement;
+				killer_moves[i][1] = dft_movement;
+			}
 		}
 		void record_hash(const chess_status& cs, const movement& cur_move,
 			int depth, eval_t val, node_f hashf)

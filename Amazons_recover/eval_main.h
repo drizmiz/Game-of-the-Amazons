@@ -55,6 +55,13 @@ namespace ev	// evaluation
 		else
 			return _quick_pow(x, n);
 	}
+	double _quick_2pow_s(int n) {
+		if (n <= -31)return 0.0;
+		if (n < 0)
+			return 1.0 / (1 << n);
+		else
+			return 1 << n;
+	}
 	inline int _pow2(int x) { return x * x; }
 
 	// ÆÀ¹ÀÆ÷
@@ -76,22 +83,22 @@ namespace ev	// evaluation
 		static constexpr int dx[8] = { -1,-1,-1,0,0,1,1,1 };
 		static constexpr int dy[8] = { -1,0,1,-1,1,-1,0,1 };
 
-#define _dxy(j) {len_t nx = p.first + dx[j], ny = p.second + dy[j];\
-			if (_In_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && distance[nx][ny] > distance[p.first][p.second] + 1)\
-			{\
-				que.push(STD make_pair(nx, ny));\
-				distance[nx][ny] = distance[p.first][p.second] + 1;\
-			}}
 #define _qdxy(j) {for (int step = 1; step < 8; step++)\
-		{\
-			len_t nx = p.first + dx[j] * step, ny = p.second + dy[j] * step;\
-			if (_In_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && dm[nx][ny] > dm[p.first][p.second] + 1)\
-			{\
-				que.push(STD make_pair(nx, ny));\
-				dm[nx][ny] = dm[p.first][p.second] + 1;\
-			}\
-			else break;\
-		}}
+				{\
+					len_t nx = p.first + dx[j] * step, ny = p.second + dy[j] * step;\
+					if (_In_map(nx, ny) && _bd.is_empty(nx, ny) && dm[nx][ny] > dm[p.first][p.second] + 1)\
+					{\
+						dm[nx][ny] = dm[p.first][p.second] + 1;\
+						que.push(STD make_pair(nx, ny));\
+					}\
+					else break;\
+				}}
+#define _kdxy(j) {len_t nx = p.first + dx[j], ny = p.second + dy[j];\
+				if (_In_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && distance[nx][ny] > distance[p.first][p.second] + 1)\
+				{\
+					distance[nx][ny] = distance[p.first][p.second] + 1;\
+					que.push(STD make_pair(nx, ny));\
+				}}
 
 		inline bool _In_map(len_t i, len_t j) { return !(((i << 4) + j) & 0x88); }
 
@@ -177,14 +184,14 @@ namespace ev	// evaluation
 				{
 					STD pair<len_t, len_t> p = que.pop();
 
-					_dxy(0);
-					_dxy(1);
-					_dxy(2);
-					_dxy(3);
-					_dxy(4);
-					_dxy(5);
-					_dxy(6);
-					_dxy(7);
+					_kdxy(0);
+					_kdxy(1);
+					_kdxy(2);
+					_kdxy(3);
+					_kdxy(4);
+					_kdxy(5);
+					_kdxy(6);
+					_kdxy(7);
 				}
 			}
 		}
@@ -306,7 +313,7 @@ namespace ev	// evaluation
 				for (int j = 0; j < 8; ++j) {
 					if (!_bd(i, j).is_empty()) continue;
 					t1 += _Territory_delta(_merged_dm_queen[0][i][j], _merged_dm_queen[1][i][j]);
-					c1 += _quick_pow_s(2, -_merged_dm_queen[0][i][j]) - _quick_pow_s(2, -_merged_dm_queen[1][i][j]);
+					c1 += _quick_2pow_s(-_merged_dm_queen[0][i][j]) - _quick_2pow_s(-_merged_dm_queen[1][i][j]);
 				}
 			c1 *= 2;
 			return { t1, c1 };
@@ -327,9 +334,10 @@ namespace ev	// evaluation
 		{
 			for (int i = 0; i < 8; i++)
 				for (int j = 0; j < 8; j++)
-					if (_bd.is_empty(get_i(i, j)))
+					if (_bd.is_empty(i, j))
 						_empty_dm[i][j] = _Empty_neighbor_sum(i, j);
 		}
+#define _mdxy(m) {sum = ((_In_map(x + dx[m], y + dy[m]) && _bd.is_empty(x + dx[m], y + dy[m])) ? sum + 1 : sum); }
 		byte _Empty_neighbor_sum(len_t x, len_t y)
 		{
 			byte sum = 0;
@@ -343,12 +351,25 @@ namespace ev	// evaluation
 			sum = ((x + 1 < 8 && y - 1 >= 0 && _bd.is_empty(x + 1, y - 1)) ? sum + 1 : sum);
 			sum = ((x - 1 >= 0 && y - 1 >= 0 && _bd.is_empty(x - 1, y - 1)) ? sum + 1 : sum);
 			*/
-			for (int m = 0; m < 8; m++)
-				sum = ((_In_map(x + dx[m], y + dy[m]) && _bd.is_empty(x + dx[m], y + dy[m])) ? sum + 1 : sum);
+			_mdxy(0);
+			_mdxy(1);
+			_mdxy(2);
+			_mdxy(3);
+			_mdxy(4);
+			_mdxy(5);
+			_mdxy(6);
+			_mdxy(7);
 			return sum;
 		}
-		double _1_div[9] = { 0.0,1.0,0.5,0.33,0.25,0.2,0.167,0.143,0.125 };
-
+		double _step_m[9] = { 0.0,1.0,0.5,0.33,0.25,0.2,0.167,0.143,0.125 };
+#define _mmdxy(i)	{for (int step = 1; step < 8; step++)\
+					{\
+						int nx = amazon.first + dx[i] * step, ny = amazon.second + dy[i] * step;\
+						if (_In_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && _merged_dm_queen[player_idx][nx][ny] != 255)\
+							a += empty[nx][ny] * _step_m[step];\
+						else\
+							break;\
+					}}
 		double _Generate_amazons_mobility(size_t player_idx) 
 		{
 			double a = 0.0;
@@ -361,16 +382,14 @@ namespace ev	// evaluation
 			_Generate_empty(empty);
 
 			for (auto amazon : amazons) {
-				for (int i = 0; i < 8; i++) {
-					for (int step = 1; step < 8; step++)
-					{
-						int nx = amazon.first + dx[i] * step, ny = amazon.second + dy[i] * step;
-						if (_In_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && _merged_dm_queen[player_idx][nx][ny] != 255)
-							a += empty[nx][ny] * _1_div[step];
-						else
-							break;
-					}
-				}
+					_mmdxy(0);
+					_mmdxy(1);
+					_mmdxy(2);
+					_mmdxy(3); 
+					_mmdxy(4);
+					_mmdxy(5);
+					_mmdxy(6);
+					_mmdxy(7);
 			}
 			return a;
 		}

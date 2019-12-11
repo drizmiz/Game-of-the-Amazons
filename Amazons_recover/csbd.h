@@ -401,27 +401,6 @@ namespace amz
 	}
 #pragma warning(pop)
 
-	enum class direction
-	{
-		row,
-		col,
-		main_diag,
-		counter_diag
-	};
-	template<direction dxy>
-	constexpr index_t get_index(bit_table bt, off_i_t i)
-	{
-		if constexpr (dxy == direction::row)
-			return _Get_row_index_by_i(bt, i);
-		else if constexpr (dxy == direction::col)
-			return _Get_col_index_by_i(bt, i);
-		else if constexpr (dxy == direction::main_diag)
-			return _Get_main_diag_index(bt, i);
-		else if constexpr (dxy == direction::counter_diag)
-			return _Get_counter_diag_index(bt, i);
-		else
-			return 0;
-	}
 #pragma endregion
 
 #pragma region ÒÆ¶¯/Âä×Ó
