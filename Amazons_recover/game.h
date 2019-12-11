@@ -226,7 +226,7 @@ namespace amz
 		}
 	public:
 		chess_game() noexcept :
-			_cs(), my_color(chess_color::white), timespan(0), deadspan(950), turn_cnt(0), _add_turn(false)
+			_cs(), my_color(chess_color::white), timespan(0), deadspan(970), turn_cnt(0), _add_turn(false)
 		{}
 		inline chess_color get_color() noexcept { return my_color; }
 		inline void set_color(chess_color cc) noexcept { my_color = cc; }
@@ -292,7 +292,7 @@ namespace amz
 		movement generate_next_move()
 		{
 			starttime = std::chrono::steady_clock::now();
-			timespan = get_turn() <= 1 ? 800 : 850;
+			timespan = turn_cnt == 1 ? 900 : 920;
 
 			this->rt.clear();
 

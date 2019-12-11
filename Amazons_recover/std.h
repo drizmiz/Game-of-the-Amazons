@@ -6,10 +6,14 @@
 #else
 #endif
 
+#ifndef NDEBUG
+#define NDEBUG
+#endif // !NDEBUG
+
 #ifndef _PREPROCESSER_ONLY		// to generate a single cpp
 #undef NDEBUG
 #include <cassert>
-#define NDEBUG
+#define NDEBUG 1
 #include <algorithm>
 #include <bitset>
 #include <deque>

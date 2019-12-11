@@ -337,32 +337,21 @@ namespace ev	// evaluation
 					if (_bd.is_empty(i, j))
 						_empty_dm[i][j] = _Empty_neighbor_sum(i, j);
 		}
-#define _mdxy(m) {sum = ((_In_map(x + dx[m], y + dy[m]) && _bd.is_empty(x + dx[m], y + dy[m])) ? sum + 1 : sum); }
 		byte _Empty_neighbor_sum(len_t x, len_t y)
 		{
 			byte sum = 0;
-			/*
-			sum = ((x + 1 < 8 && _bd.is_empty(x + 1, y)) ? sum + 1 : sum);
-			sum = ((x - 1 >= 0 && _bd.is_empty(x - 1, y)) ? sum + 1 : sum);
-			sum = ((y + 1 < 8 && _bd.is_empty(x, y + 1)) ? sum + 1 : sum);
-			sum = ((y - 1 >= 0 && _bd.is_empty(x, y - 1)) ? sum + 1 : sum);
-			sum = ((x + 1 < 8 && y + 1 < 8 && _bd.is_empty(x + 1, y + 1)) ? sum + 1 : sum);
-			sum = ((x - 1 >= 0 && y + 1 < 8 && _bd.is_empty(x - 1, y + 1)) ? sum + 1 : sum);
-			sum = ((x + 1 < 8 && y - 1 >= 0 && _bd.is_empty(x + 1, y - 1)) ? sum + 1 : sum);
-			sum = ((x - 1 >= 0 && y - 1 >= 0 && _bd.is_empty(x - 1, y - 1)) ? sum + 1 : sum);
-			*/
-			_mdxy(0);
-			_mdxy(1);
-			_mdxy(2);
-			_mdxy(3);
-			_mdxy(4);
-			_mdxy(5);
-			_mdxy(6);
-			_mdxy(7);
+			sum += x + 1 < 8 && _bd.is_empty(x + 1, y);
+			sum += x - 1 >= 0 && _bd.is_empty(x - 1, y);
+			sum += y + 1 < 8 && _bd.is_empty(x, y + 1);
+			sum += y - 1 >= 0 && _bd.is_empty(x, y - 1);
+			sum += (x + 1 < 8) & (y + 1 < 8) && _bd.is_empty(x + 1, y + 1);
+			sum += (x - 1 >= 0) & (y + 1 < 8) && _bd.is_empty(x - 1, y + 1);
+			sum += (x + 1 < 8) & (y - 1 >= 0) && _bd.is_empty(x + 1, y - 1);
+			sum += (x - 1 >= 0) & (y - 1 >= 0) && _bd.is_empty(x - 1, y - 1);
 			return sum;
 		}
 		double _step_m[9] = { 0.0,1.0,0.5,0.33,0.25,0.2,0.167,0.143,0.125 };
-#define _mmdxy(i)	{for (int step = 1; step < 8; step++)\
+#define _mdxy(i)	{for (int step = 1; step < 8; step++)\
 					{\
 						int nx = amazon.first + dx[i] * step, ny = amazon.second + dy[i] * step;\
 						if (_In_map(nx, ny) && _bd.is_empty(get_i(nx, ny)) && _merged_dm_queen[player_idx][nx][ny] != 255)\
@@ -382,14 +371,14 @@ namespace ev	// evaluation
 			_Generate_empty(empty);
 
 			for (auto amazon : amazons) {
-					_mmdxy(0);
-					_mmdxy(1);
-					_mmdxy(2);
-					_mmdxy(3); 
-					_mmdxy(4);
-					_mmdxy(5);
-					_mmdxy(6);
-					_mmdxy(7);
+					_mdxy(0);
+					_mdxy(1);
+					_mdxy(2);
+					_mdxy(3); 
+					_mdxy(4);
+					_mdxy(5);
+					_mdxy(6);
+					_mdxy(7);
 			}
 			return a;
 		}
